@@ -41,6 +41,7 @@ import com.mygdx.game.components.ModelComponent;
 import com.mygdx.game.components.PickRayComponent;
 import com.mygdx.game.screens.GameObject;
 import com.mygdx.game.screens.InstanceData;
+import com.mygdx.game.screens.ModelGroup;
 import com.mygdx.game.util.MeshHelper;
 import com.mygdx.game.util.ModelInstanceEx;
 import com.mygdx.game.util.PrimitivesBuilder;
@@ -132,21 +133,7 @@ public class SceneLoader implements Disposable {
 
     public static class SceneData {
 
-        public static class ModelGroup {
-            ModelGroup() {
-            }
 
-            ModelGroup(String groupName) {
-            }
-
-            ModelGroup(String groupName, String modelName) {
-                this(groupName);
-                this.modelName = modelName;
-            }
-
-            String modelName;
-            Array<GameObject> gameObjects = new Array<GameObject>();
-        }
 
         public static class ModelInfo {
             ModelInfo() {
@@ -382,7 +369,7 @@ Gdx.app.log("SceneLoader", "new Entity");
         else
             tmpName = "tanks";
 
-        SceneData.ModelGroup mg = gameData.modelGroups.get(tmpName);
+        ModelGroup mg = gameData.modelGroups.get(tmpName);
 
         if (null != mg) {
             for (GameObject gameObject : gameData.modelGroups.get(tmpName).gameObjects) {
@@ -428,7 +415,7 @@ Gdx.app.log("SceneLoader", "new Entity");
 
                 Gdx.app.log("SceneLoader", "  mg = gameData.modelGroups.get(key) ... key = " + key);
 
-                SceneData.ModelGroup mg = gameData.modelGroups.get(key);
+                ModelGroup mg = gameData.modelGroups.get(key);
 
             if (null == mg) {
                 Gdx.app.log("SceneLoader", "gameData.modelGroups.get(key) = NULL   (key = " + key);
@@ -497,7 +484,7 @@ Gdx.app.log("SceneLoader", "new Entity");
 
         for (String key : gameData.modelGroups.keySet()) {
 
-            SceneData.ModelGroup mg = new SceneData.ModelGroup(key /* gameData.modelGroups.get(key).groupName */);
+            ModelGroup mg = new ModelGroup(key /* gameData.modelGroups.get(key).groupName */);
 
             for (GameObject o : gameData.modelGroups.get(key).gameObjects) {
 
