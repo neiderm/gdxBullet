@@ -39,6 +39,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import com.mygdx.game.components.BulletComponent;
 import com.mygdx.game.components.ModelComponent;
 import com.mygdx.game.components.PickRayComponent;
+import com.mygdx.game.screens.GameObject;
 import com.mygdx.game.screens.InstanceData;
 import com.mygdx.game.util.MeshHelper;
 import com.mygdx.game.util.ModelInstanceEx;
@@ -144,7 +145,7 @@ public class SceneLoader implements Disposable {
             }
 
             String modelName;
-            Array<SceneData.GameObject> gameObjects = new Array<SceneData.GameObject>();
+            Array<GameObject> gameObjects = new Array<GameObject>();
         }
 
         public static class ModelInfo {
@@ -162,28 +163,7 @@ public class SceneLoader implements Disposable {
         HashMap<String, ModelGroup> modelGroups = new HashMap<String, ModelGroup>();
         HashMap<String, ModelInfo> modelInfo = new HashMap<String, ModelInfo>();
 
-        static class GameObject {
-            GameObject() {
-            }
 
-            GameObject(String objectName, String meshShape) {
-                this.objectName = objectName;
-                this.meshShape = meshShape;
-                this.isShadowed = true;
-                this.isKinematic = true;
-                this.scale = new Vector3(1, 1, 1); // placeholder
-            }
-
-
-            Array<InstanceData> instanceData = new Array<InstanceData>();
-            String objectName;
-            //            Vector3 translation; // needs to be only per-instance
-            Vector3 scale; // NOT per-instance, all instances should be same scale (share same collision Shape)
-            float mass;
-            String meshShape; // triangleMeshShape, convexHullShape
-            boolean isKinematic;  // TODO: change "isStatic"
-            boolean isShadowed;
-        }
     }
 
     /*
@@ -273,7 +253,7 @@ public class SceneLoader implements Disposable {
   *
   * @return: gameObject?
   */
-    private void loadModelNodes(Engine engine, SceneData.GameObject gameObject, Model model) {
+    private void loadModelNodes(Engine engine, GameObject gameObject, Model model) {
 
         Entity e;
 
@@ -308,7 +288,7 @@ instances should be same size/scale so that we can pass one collision shape to s
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            SceneData.GameObject gameObject, InstanceData i, Model model, String nodeID) {
+            GameObject gameObject, InstanceData i, Model model, String nodeID) {
 
         btCollisionShape shape = null;
 
@@ -405,7 +385,7 @@ Gdx.app.log("SceneLoader", "new Entity");
         SceneData.ModelGroup mg = gameData.modelGroups.get(tmpName);
 
         if (null != mg) {
-            for (SceneData.GameObject gameObject : gameData.modelGroups.get(tmpName).gameObjects) {
+            for (GameObject gameObject : gameData.modelGroups.get(tmpName).gameObjects) {
 
                 Model model = gameData.modelInfo.get(gameObject.objectName).model;
                 Entity e;
@@ -456,7 +436,7 @@ Gdx.app.log("SceneLoader", "new Entity");
 
                 SceneData.ModelInfo mi = gameData.modelInfo.get(mg.modelName);
 
-                for (SceneData.GameObject gameObject : mg.gameObjects) {
+                for (GameObject gameObject : mg.gameObjects) {
 
                     if (null != mi) {
                         loadModelNodes(engine, gameObject, mi.model);
@@ -478,7 +458,7 @@ Gdx.app.log("SceneLoader", "new Entity");
         }
     }
 
-    private void buildPrimitiveObject(Engine engine, SceneData.GameObject o)
+    private void buildPrimitiveObject(Engine engine, GameObject o)
     {
         PrimitivesBuilder pb = null;
 
@@ -519,9 +499,9 @@ Gdx.app.log("SceneLoader", "new Entity");
 
             SceneData.ModelGroup mg = new SceneData.ModelGroup(key /* gameData.modelGroups.get(key).groupName */);
 
-            for (SceneData.GameObject o : gameData.modelGroups.get(key).gameObjects) {
+            for (GameObject o : gameData.modelGroups.get(key).gameObjects) {
 
-                SceneData.GameObject cpObject = new SceneData.GameObject(o.objectName, o.meshShape);
+                GameObject cpObject = new GameObject(o.objectName, o.meshShape);
 
                 for (InstanceData i : o.instanceData) {
 
