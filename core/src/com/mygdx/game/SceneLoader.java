@@ -20,7 +20,6 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Node;
@@ -34,8 +33,6 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btConvexHullShape;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonWriter;
 import com.mygdx.game.components.BulletComponent;
 import com.mygdx.game.components.ModelComponent;
 import com.mygdx.game.components.PickRayComponent;
@@ -43,11 +40,11 @@ import com.mygdx.game.screens.GameObject;
 import com.mygdx.game.screens.InstanceData;
 import com.mygdx.game.screens.ModelGroup;
 import com.mygdx.game.screens.ModelInfo;
+import com.mygdx.game.screens.SceneData;
 import com.mygdx.game.util.MeshHelper;
 import com.mygdx.game.util.ModelInstanceEx;
 import com.mygdx.game.util.PrimitivesBuilder;
 
-import java.util.HashMap;
 import java.util.Random;
 
 
@@ -106,7 +103,7 @@ public class SceneLoader implements Disposable {
 
 //        initializeGameData();
 
-        loadData(path);
+        gameData = SceneData.loadData(path);
 
         assets = new AssetManager();
 /*
@@ -123,7 +120,7 @@ public class SceneLoader implements Disposable {
             }
         }
 
-        saveData(gameData);
+        SceneData.saveData(gameData);
     }
 
     public AssetManager getAssets() {
@@ -131,30 +128,6 @@ public class SceneLoader implements Disposable {
     }
 
 
-
-    public static class SceneData {
-
-
-
-/*
-        public static class ModelInfo {
-            ModelInfo() {
-            }
-
-            ModelInfo(String fileName) {
-                this.fileName = fileName;
-            }
-
-            String fileName;
-            Model model = PrimitivesBuilder.primitivesModel;  // allow it to be default
-        }
-*/
-
-        HashMap<String, ModelGroup> modelGroups = new HashMap<String, ModelGroup>();
-        HashMap<String, ModelInfo> modelInfo = new HashMap<String, ModelInfo>();
-
-
-    }
 
     /*
         http://niklasnson.com/programming/network/tips%20and%20tricks/2017/09/15/libgdx-save-and-load-game-data.html
@@ -170,23 +143,6 @@ public class SceneLoader implements Disposable {
         }
     }*/
 
-    private void saveData(SceneData data) {
-        Json json = new Json();
-        json.setOutputType(JsonWriter.OutputType.json); // see "https://github.com/libgdx/libgdx/wiki/Reading-and-writing-JSON"
-        FileHandle fileHandle = Gdx.files.local("GameData_out.json");
-        if (data != null) {
-//            fileHandle.writeString(Base64Coder.encodeString(json.prettyPrint(gameData)), false);
-            fileHandle.writeString(json.prettyPrint(data), false);
-            //System.out.println(json.prettyPrint(gameData));
-        }
-    }
-
-    private void loadData(String path) {
-        Json json = new Json();
-        FileHandle fileHandle = Gdx.files.internal(path);
-        //        gameData = json.fromJson(GameData.class, Base64Coder.decodeString(fileHandle.readString()));
-        gameData = json.fromJson(SceneData.class, fileHandle.readString());
-    }
 
 
     public void doneLoading() {
@@ -415,8 +371,6 @@ Gdx.app.log("SceneLoader", "new Entity");
                 Gdx.app.log("SceneLoader", "gameData.modelGroups ... key = " );
             }
             else{
-
-                Gdx.app.log("SceneLoader", "  mg = gameData.modelGroups.get(key) ... key = " + key);
 
                 ModelGroup mg = gameData.modelGroups.get(key);
 
