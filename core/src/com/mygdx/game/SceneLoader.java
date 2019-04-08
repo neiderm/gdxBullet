@@ -42,6 +42,7 @@ import com.mygdx.game.components.PickRayComponent;
 import com.mygdx.game.screens.GameObject;
 import com.mygdx.game.screens.InstanceData;
 import com.mygdx.game.screens.ModelGroup;
+import com.mygdx.game.screens.ModelInfo;
 import com.mygdx.game.util.MeshHelper;
 import com.mygdx.game.util.ModelInstanceEx;
 import com.mygdx.game.util.PrimitivesBuilder;
@@ -135,6 +136,7 @@ public class SceneLoader implements Disposable {
 
 
 
+/*
         public static class ModelInfo {
             ModelInfo() {
             }
@@ -146,6 +148,7 @@ public class SceneLoader implements Disposable {
             String fileName;
             Model model = PrimitivesBuilder.primitivesModel;  // allow it to be default
         }
+*/
 
         HashMap<String, ModelGroup> modelGroups = new HashMap<String, ModelGroup>();
         HashMap<String, ModelInfo> modelInfo = new HashMap<String, ModelInfo>();
@@ -421,7 +424,7 @@ Gdx.app.log("SceneLoader", "new Entity");
                 Gdx.app.log("SceneLoader", "gameData.modelGroups.get(key) = NULL   (key = " + key);
             }else{
 
-                SceneData.ModelInfo mi = gameData.modelInfo.get(mg.modelName);
+                ModelInfo mi = gameData.modelInfo.get(mg.modelName);
 
                 for (GameObject gameObject : mg.gameObjects) {
 
@@ -429,7 +432,7 @@ Gdx.app.log("SceneLoader", "new Entity");
                         loadModelNodes(engine, gameObject, mi.model);
                     } else {
                         // look for a model file  named as the object
-                        SceneData.ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
+                        ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
 
                         if (null == mdlinfo) {
                             buildPrimitiveObject(engine, gameObject);
