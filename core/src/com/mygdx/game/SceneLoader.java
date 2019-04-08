@@ -366,38 +366,31 @@ Gdx.app.log("SceneLoader", "new Entity");
 
         for (String key : gameData.modelGroups.keySet()) {
 
-            if (null == key ) {
-
-                Gdx.app.log("SceneLoader", "gameData.modelGroups ... key = " );
-            }
-            else{
+            if (null != key) {
 
                 ModelGroup mg = gameData.modelGroups.get(key);
 
-            if (null == mg) {
-                Gdx.app.log("SceneLoader", "gameData.modelGroups.get(key) = NULL   (key = " + key);
-            }else{
+                if (null != mg) {
 
-                ModelInfo mi = gameData.modelInfo.get(mg.modelName);
+                    ModelInfo mi = gameData.modelInfo.get(mg.modelName);
 
-                for (GameObject gameObject : mg.gameObjects) {
+                    for (GameObject gameObject : mg.gameObjects) {
 
-                    if (null != mi) {
-                        loadModelNodes(engine, gameObject, mi.model);
-                    } else {
-                        // look for a model file  named as the object
-                        ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
-
-                        if (null == mdlinfo) {
-                            buildPrimitiveObject(engine, gameObject);
-
+                        if (null != mi) {
+                            loadModelNodes(engine, gameObject, mi.model);
                         } else {
+                            // look for a model file  named as the object
+                            ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
+
+                            if (null == mdlinfo) {
+                                buildPrimitiveObject(engine, gameObject);
+
+                            } else {
 //                            Model model = gameData.modelInfo.get(gameObject.objectName).model;
-//                            Gdx.app.log("SceneLoader", "gameObject.objectName = " + gameObject.objectName);
+                            }
                         }
                     }
                 }
-            }
             }
         }
     }
