@@ -54,7 +54,7 @@ import java.util.Random;
 
 public class SceneLoader implements Disposable {
 
-    private GameData gameData;
+    private SceneData gameData;
     private static boolean useTestObjects = true;
     private AssetManager assets;
 
@@ -63,7 +63,7 @@ public class SceneLoader implements Disposable {
 
     public SceneLoader(String path) {
 
-        gameData = new GameData();
+        gameData = new SceneData();
 /*
         ModelGroup tanksGroup = new ModelGroup("tanks");
         tanksGroup.gameObjects.add(new GameData.GameObject("ship", "mesh Shape"));
@@ -129,7 +129,7 @@ public class SceneLoader implements Disposable {
 
 
 
-    public static class GameData {
+    public static class SceneData {
 
         public static class ModelGroup {
             ModelGroup() {
@@ -144,7 +144,7 @@ public class SceneLoader implements Disposable {
             }
 
             String modelName;
-            Array<GameData.GameObject> gameObjects = new Array<GameData.GameObject>();
+            Array<SceneData.GameObject> gameObjects = new Array<SceneData.GameObject>();
         }
 
         public static class ModelInfo {
@@ -200,7 +200,7 @@ public class SceneLoader implements Disposable {
         }
     }*/
 
-    private void saveData(GameData data) {
+    private void saveData(SceneData data) {
         Json json = new Json();
         json.setOutputType(JsonWriter.OutputType.json); // see "https://github.com/libgdx/libgdx/wiki/Reading-and-writing-JSON"
         FileHandle fileHandle = Gdx.files.local("GameData_out.json");
@@ -215,7 +215,7 @@ public class SceneLoader implements Disposable {
         Json json = new Json();
         FileHandle fileHandle = Gdx.files.internal(path);
         //        gameData = json.fromJson(GameData.class, Base64Coder.decodeString(fileHandle.readString()));
-        gameData = json.fromJson(GameData.class, fileHandle.readString());
+        gameData = json.fromJson(SceneData.class, fileHandle.readString());
     }
 
 
@@ -273,7 +273,7 @@ public class SceneLoader implements Disposable {
   *
   * @return: gameObject?
   */
-    private void loadModelNodes(Engine engine, GameData.GameObject gameObject, Model model) {
+    private void loadModelNodes(Engine engine, SceneData.GameObject gameObject, Model model) {
 
         Entity e;
 
@@ -308,7 +308,7 @@ instances should be same size/scale so that we can pass one collision shape to s
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            GameData.GameObject gameObject, InstanceData i, Model model, String nodeID) {
+            SceneData.GameObject gameObject, InstanceData i, Model model, String nodeID) {
 
         btCollisionShape shape = null;
 
@@ -402,10 +402,10 @@ Gdx.app.log("SceneLoader", "new Entity");
         else
             tmpName = "tanks";
 
-        GameData.ModelGroup mg = gameData.modelGroups.get(tmpName);
+        SceneData.ModelGroup mg = gameData.modelGroups.get(tmpName);
 
         if (null != mg) {
-            for (GameData.GameObject gameObject : gameData.modelGroups.get(tmpName).gameObjects) {
+            for (SceneData.GameObject gameObject : gameData.modelGroups.get(tmpName).gameObjects) {
 
                 Model model = gameData.modelInfo.get(gameObject.objectName).model;
                 Entity e;
@@ -438,9 +438,6 @@ Gdx.app.log("SceneLoader", "new Entity");
 
     public void buildArena(Engine engine) {
 
-        Gdx.app.log("SceneLoader", "======================== " );
-
-
         for (String key : gameData.modelGroups.keySet()) {
 
             if (null == key ) {
@@ -451,34 +448,25 @@ Gdx.app.log("SceneLoader", "new Entity");
 
                 Gdx.app.log("SceneLoader", "  mg = gameData.modelGroups.get(key) ... key = " + key);
 
-                GameData.ModelGroup mg = gameData.modelGroups.get(key);
+                SceneData.ModelGroup mg = gameData.modelGroups.get(key);
 
             if (null == mg) {
                 Gdx.app.log("SceneLoader", "gameData.modelGroups.get(key) = NULL   (key = " + key);
             }else{
 
-                GameData.ModelInfo mi = gameData.modelInfo.get(mg.modelName);
+                SceneData.ModelInfo mi = gameData.modelInfo.get(mg.modelName);
 
-                Gdx.app.log("SceneLoader", "Loading modelGroup = " + mg.modelName);
-
-                for (GameData.GameObject gameObject : mg.gameObjects) {
-
-                    Gdx.app.log("SceneLoader", " ... gameObject.objectName = " + gameObject.objectName);
+                for (SceneData.GameObject gameObject : mg.gameObjects) {
 
                     if (null != mi) {
-
                         loadModelNodes(engine, gameObject, mi.model);
-
-                        Gdx.app.log("SceneLoader", " ... +++ loadModelNodes() gameObject.objectName = " + gameObject.objectName);
-
                     } else {
                         // look for a model file  named as the object
-                        GameData.ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
+                        SceneData.ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
 
                         if (null == mdlinfo) {
                             buildPrimitiveObject(engine, gameObject);
 
-                            Gdx.app.log("SceneLoader", " ... +++ buildPrimitiveObject() gameObject.objectName = " + gameObject.objectName);
                         } else {
 //                            Model model = gameData.modelInfo.get(gameObject.objectName).model;
 //                            Gdx.app.log("SceneLoader", "gameObject.objectName = " + gameObject.objectName);
@@ -490,7 +478,7 @@ Gdx.app.log("SceneLoader", "new Entity");
         }
     }
 
-    private void buildPrimitiveObject(Engine engine, GameData.GameObject o)
+    private void buildPrimitiveObject(Engine engine, SceneData.GameObject o)
     {
         PrimitivesBuilder pb = null;
 
@@ -525,15 +513,15 @@ Gdx.app.log("SceneLoader", "new Entity");
 
 
 // new test file writer
-        GameData cpGameData = new GameData();
+        SceneData cpGameData = new SceneData();
 
         for (String key : gameData.modelGroups.keySet()) {
 
-            GameData.ModelGroup mg = new GameData.ModelGroup(key /* gameData.modelGroups.get(key).groupName */);
+            SceneData.ModelGroup mg = new SceneData.ModelGroup(key /* gameData.modelGroups.get(key).groupName */);
 
-            for (GameData.GameObject o : gameData.modelGroups.get(key).gameObjects) {
+            for (SceneData.GameObject o : gameData.modelGroups.get(key).gameObjects) {
 
-                GameData.GameObject cpObject = new GameData.GameObject(o.objectName, o.meshShape);
+                SceneData.GameObject cpObject = new SceneData.GameObject(o.objectName, o.meshShape);
 
                 for (InstanceData i : o.instanceData) {
 
