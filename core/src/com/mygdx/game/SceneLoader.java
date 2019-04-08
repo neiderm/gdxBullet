@@ -21,11 +21,9 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Node;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.Bullet;
@@ -41,6 +39,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import com.mygdx.game.components.BulletComponent;
 import com.mygdx.game.components.ModelComponent;
 import com.mygdx.game.components.PickRayComponent;
+import com.mygdx.game.screens.InstanceData;
 import com.mygdx.game.util.MeshHelper;
 import com.mygdx.game.util.ModelInstanceEx;
 import com.mygdx.game.util.PrimitivesBuilder;
@@ -175,20 +174,6 @@ public class SceneLoader implements Disposable {
                 this.scale = new Vector3(1, 1, 1); // placeholder
             }
 
-            static class InstanceData {
-                InstanceData() {
-                }
-
-                InstanceData(Vector3 translation, Quaternion rotation) {
-                    this.translation = new Vector3(translation);
-                    this.rotation = new Quaternion(rotation);
-                    this.color = Color.CORAL;
-                }
-
-                Quaternion rotation;
-                Vector3 translation;
-                Color color;
-            }
 
             Array<InstanceData> instanceData = new Array<InstanceData>();
             String objectName;
@@ -299,7 +284,7 @@ public class SceneLoader implements Disposable {
 
             if (node.id.contains(unGlobbedObjectName)) {
 
-                GameData.GameObject.InstanceData id;
+                InstanceData id;
                 int n = 0;
 
                 do {
@@ -323,7 +308,7 @@ instances should be same size/scale so that we can pass one collision shape to s
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            GameData.GameObject gameObject, GameData.GameObject.InstanceData i, Model model, String nodeID) {
+            GameData.GameObject gameObject, InstanceData i, Model model, String nodeID) {
 
         btCollisionShape shape = null;
 
@@ -425,7 +410,7 @@ Gdx.app.log("SceneLoader", "new Entity");
                 Model model = gameData.modelInfo.get(gameObject.objectName).model;
                 Entity e;
 
-                for (GameData.GameObject.InstanceData i : gameObject.instanceData) {
+                for (InstanceData i : gameObject.instanceData) {
 
                     e = new Entity();
 
@@ -523,7 +508,7 @@ Gdx.app.log("SceneLoader", "new Entity");
 
         if (null != pb) {
             Vector3 scale = o.scale;
-            for (GameData.GameObject.InstanceData i : o.instanceData) {
+            for (InstanceData i : o.instanceData) {
                 Entity e = pb.create(o.mass, i.translation, scale);
                 if (null != i.color)
                     ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
@@ -550,7 +535,7 @@ Gdx.app.log("SceneLoader", "new Entity");
 
                 GameData.GameObject cpObject = new GameData.GameObject(o.objectName, o.meshShape);
 
-                for (GameData.GameObject.InstanceData i : o.instanceData) {
+                for (InstanceData i : o.instanceData) {
 
                     cpObject.instanceData.add(i);
                 }
