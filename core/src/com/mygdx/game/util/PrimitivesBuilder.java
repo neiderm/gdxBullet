@@ -163,7 +163,11 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, nodeID, new btSphereShape(size.x * DIM_HE), size, mass, trans);
+                return load(this.model, nodeID, getShape(size), size, mass, trans);
+            }
+            @Override
+            public btCollisionShape getShape(Vector3 size) {
+                return new btSphereShape(size.x * DIM_HE);
             }
         };
     }
@@ -172,7 +176,11 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, nodeID, new btBoxShape(size.cpy().scl(DIM_HE)), size, mass, trans);
+                return load(this.model, nodeID, getShape(size), size, mass, trans);
+            }
+            @Override
+            public btCollisionShape getShape(Vector3 size) {
+                return new btBoxShape(size.cpy().scl(DIM_HE));
             }
         };
     }
@@ -237,11 +245,7 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
      *   https://github.com/libgdx/libgdx/wiki/Bullet-Wrapper---Using-models
      *  But in some situations having issues (works only if single node in model, and it has no local translation - see code in Bullet.java)
      */
-    static Entity load(
-            Model model, String nodeID, btCollisionShape shape, Vector3 size, float mass, Vector3 translation) {
-
-        // we can roll the instance scale transform into the getModelInstance ;)
-        ModelInstance instance = ModelInstanceEx.getModelInstance(model, nodeID);
+    public static void load(ModelInstance instance, Vector3 size, Vector3 translation) {
 
         //        if (null != size)
 // https://stackoverflow.com/questions/21827302/scaling-a-modelinstance-in-libgdx-3d-and-bullet-engine
@@ -253,6 +257,15 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         if (null != translation) {
             instance.transform.trn(translation);
         }
+    }
+
+    static Entity load(
+            Model model, String nodeID, btCollisionShape shape, Vector3 size, float mass, Vector3 translation) {
+
+        // we can roll the instance scale transform into the getModelInstance ;)
+        ModelInstance instance = ModelInstanceEx.getModelInstance(model, nodeID);
+
+        load(instance, size, translation);
 
         BulletComponent bc = new BulletComponent(shape, instance.transform, mass);
 
