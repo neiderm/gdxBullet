@@ -127,7 +127,7 @@ class SelectScreen extends ScreenAvecAssets {
         screenData.buildCharacters(
                 characters, engine, "tanks", true, false);
 
-        screenData.buildArena(engine);
+        screenData.buildScene(engine);
 
         stage = new Stage();
         stage.addListener(new InputListener() {

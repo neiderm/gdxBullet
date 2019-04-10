@@ -155,9 +155,9 @@ public class SceneLoader implements Disposable {
 //        gameData.modelInfo.get("primitives").model = PrimitivesBuilder.primitivesModel; // maybe we don't need it
     }
 
-    private final Random rnd = new Random();
+    private static void createTestObjects(Engine engine) {
 
-    public void onPlayerPicked(Engine engine) {
+        Random rnd = new Random();
 
         int N_ENTITIES = 10;
         final int N_BOXES = 4;
@@ -362,12 +362,14 @@ Gdx.app.log("SceneLoader", "new Entity");
         }
     }
 
-    public void buildArena(Engine engine) {
+    public void buildScene(Engine engine) {
+
+        createTestObjects(engine); // creates test objects
 
         for (String key : gameData.modelGroups.keySet()) {
 
-            if (null != key) {
-
+//            if (null != key)
+{
                 ModelGroup mg = gameData.modelGroups.get(key);
 
                 if (null != mg) {
@@ -428,7 +430,6 @@ Gdx.app.log("SceneLoader", "new Entity");
         //  Disposing the file will automatically make all instances invalid!
         assets.dispose();
 
-
 // new test file writer
         SceneData cpGameData = new SceneData();
 
@@ -446,8 +447,8 @@ Gdx.app.log("SceneLoader", "new Entity");
                 }
                 mg.gameObjects.add(cpObject);
             }
-            cpGameData.modelGroups.put(key /* gameData.modelGroups.get(key).groupName */, mg);
 
+            cpGameData.modelGroups.put(key /* gameData.modelGroups.get(key).groupName */, mg);
         }
 //        saveData(cpGameData);
     }

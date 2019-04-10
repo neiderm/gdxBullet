@@ -193,10 +193,9 @@ class GameScreen extends ScreenAvecAssets {
     // this is kind of an arbitrary
     private void onPlayerPicked() {
 
-        screenData.buildArena(engine);
+        screenData.buildScene(engine);
 
-
-        screenData.onPlayerPicked(engine); // creates test objects
+        // load the rigs and search for matching name (name of rig as read from model is stashed in PickRayComp as a hack ;)
 
 // load the rigs and search for matching name (name of rig as read from model is stashed in PickRayComp as a hack ;)
         Array<Entity> characters = new Array<Entity>();
@@ -332,8 +331,10 @@ class GameScreen extends ScreenAvecAssets {
     private Timer.Task oneSecondTask = new Timer.Task(){
         @Override
         public void run (){
-            gameOverCountDown -= ONE_SECOND; // fps for now
+            if ( ! GameWorld.getInstance().getIsPaused() ) {
+                gameOverCountDown -= ONE_SECOND; // fps for now
                 textShow = !textShow;
+            }
         }
     };
 
