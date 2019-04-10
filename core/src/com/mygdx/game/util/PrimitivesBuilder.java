@@ -56,10 +56,16 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
     /* private */ public // hakakakakakakak
     static /*final */ Model primitivesModel;
 
+    public static btCollisionShape selectedShape; // idkf
+
     /* instances only access the protected reference to the model */
     private PrimitivesBuilder() {
 
         this.model = primitivesModel;
+    }
+
+    public static Model getPrimitivesModel(){
+        return primitivesModel;
     }
 
     /* one instance of the primitives model is allowed to persist for the entire app lifetime */
@@ -99,7 +105,13 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         mb.node().id = "sphereTex";
         mb.part("sphere", GL20.GL_TRIANGLES, attributes,
                 new Material(TextureAttribute.createDiffuse(tex))).sphere(1f, 1f, 1f, 10, 10);
-/* example of createCullFace */ /*
+
+        tex = new Texture(Gdx.files.internal("data/badlogic.jpg"), true);
+        mb.node().id = "sphereCharacter";
+        mb.part("sphere", GL20.GL_TRIANGLES, attributes,
+                new Material(TextureAttribute.createDiffuse(tex))).sphere(1f, 1f, 1f, 10, 10);
+
+        /* example of createCullFace */ /*
         tex = new Texture(Gdx.files.internal("data/sky.jpg"), true);
         mb.node().id = "skySphere";
         mb.part("sphere", GL20.GL_TRIANGLES, attributes,
@@ -114,6 +126,38 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
     In some cases we have to take special care as bullet shapes don't all parameterize same way as gdx model primitives.
     Constant "DIM_HE" (primitives-half-extent) is used interchangeably to compute radius from size.x, as well as half extents where needed.
     */
+/*
+    public static PrimitivesBuilder getPrimitiveBuilder(final Model model, final String objectName ) {
+
+        PrimitivesBuilder pb = getPrimitiveBuilder(objectName);
+        pb.model = model;
+        return pb;
+    }
+*/
+    public static PrimitivesBuilder getPrimitiveBuilder(final String objectName) {
+
+        PrimitivesBuilder pb = null;
+
+        if (objectName.contains("box")) {
+// bulletshape given in file but get box builder is tied to it already
+            pb = PrimitivesBuilder.getBoxBuilder(); // this constructor could use a size param ?
+        }
+        else if (objectName.contains("sphere")) {
+// bulletshape given in file but get Sphere builder is tied to it already
+            pb = PrimitivesBuilder.getSphereBuilder(); // this constructor could use a size param ?
+        }
+        else if (objectName.contains("cylinder")) {
+            pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+        }
+        else if (objectName.contains("capsule")) {
+            pb = PrimitivesBuilder.getCapsuleBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+        }
+        else if (objectName.contains("cone")) {
+            pb = PrimitivesBuilder.getConeBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+        }
+
+        return pb;
+    }
 
     public static PrimitivesBuilder getSphereBuilder(final String nodeID) {
         return new PrimitivesBuilder() {
