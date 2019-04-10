@@ -4,17 +4,22 @@ import com.badlogic.gdx.utils.Array;
 
 public class ModelGroup {
 
-    public ModelGroup() {
+    ModelGroup() {
     }
 
     public ModelGroup(String groupName) {
     }
 
-    public ModelGroup(String groupName, String modelName) {
+    ModelGroup(String groupName, String modelName) {
+
         this(groupName);
         this.modelName = modelName;
+        this.isKinematic = true;
     }
 
     public String modelName;
     public Array<GameObject> gameObjects = new Array<GameObject>();
+
+    public boolean isKinematic;
+    public boolean isCharacter;
 }
