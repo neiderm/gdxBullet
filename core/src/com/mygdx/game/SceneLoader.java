@@ -194,43 +194,6 @@ public class SceneLoader implements Disposable {
         }
     }
 
- /*
-  * searching the model for the given gameObject.objectName* ... so this is not efficient and would not scale well with increasing number of model nodes!
-  *
-  * @return: gameObject?
-  */
-    private void loadModelNodes(Engine engine, GameObject gameObject, Model model) {
-
-        Entity e;
-
-        /* load all nodes from model that match /objectName.*/
-        for (Node node : model.nodes) {
-
-            String unGlobbedObjectName = gameObject.objectName.replaceAll("\\*$", "");
-
-            if (node.id.contains(unGlobbedObjectName)) {
-
-                InstanceData id;
-                int n = 0;
-
-                do {
-                    id = null;
-
-                    if (gameObject.instanceData.size > 0) {
-/*
-instances should be same size/scale so that we can pass one collision shape to share between them
-*/
-                        id = gameObject.instanceData.get(n++);
-                    }
-                    e = buildObjectInstance(gameObject, id, model, node.id);
-
-                    if (null != e) {
-                        engine.addEntity(e);
-                    }
-                } while (null != id && n < gameObject.instanceData.size);
-            } // else  ... bail out if matched an un-globbed name ?
-        }
-    }
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
@@ -379,16 +342,66 @@ Gdx.app.log("SceneLoader", "new Entity");
                     for (GameObject gameObject : mg.gameObjects) {
 
                         if (null != mi) {
-                            loadModelNodes(engine, gameObject, mi.model);
+
+                            Model model = mi.model;
+                            Entity e;
+
+                            /* load all nodes from model that match /objectName.*/
+                            for (Node node : model.nodes) {
+
+                                String unGlobbedObjectName = gameObject.objectName.replaceAll("\\*$", "");
+
+                                if (node.id.contains(unGlobbedObjectName)) {
+
+                                    InstanceData id;
+                                    int n = 0;
+
+                                    do {
+                                        id = null;
+
+                                        if (gameObject.instanceData.size > 0) {
+/*
+instances should be same size/scale so that we can pass one collision shape to share between them
+*/
+                                            id = gameObject.instanceData.get(n++);
+                                        }
+                                        e = buildObjectInstance(gameObject, id, model, node.id);
+
+                                        if (null != e) {
+                                            engine.addEntity(e);
+                                        }
+                                    } while (null != id && n < gameObject.instanceData.size);
+                                } // else  ... bail out if matched an un-globbed name ?
+                            }
                         } else {
                             // look for a model file  named as the object
                             ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
 
                             if (null == mdlinfo) {
-                                buildPrimitiveObject(engine, gameObject);
 
-                            } else {
-//                            Model model = gameData.modelInfo.get(gameObject.objectName).model;
+                                PrimitivesBuilder pb = null;
+
+                                if (gameObject.objectName.contains("box")) {
+// bulletshape given in file but get box builder is tied to it already
+                                    pb = PrimitivesBuilder.getBoxBuilder(gameObject.objectName); // this constructor could use a size param ?
+                                }
+                                else if (gameObject.objectName.contains("sphere")) {
+// bulletshape given in file but get Sphere builder is tied to it already
+                                    pb = PrimitivesBuilder.getSphereBuilder(gameObject.objectName); // this constructor could use a size param ?
+                                }
+                                else if (gameObject.objectName.contains("cylinder")) {
+                                    pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+                                }
+
+                                if (null != pb) {
+                                    Vector3 scale = gameObject.scale;
+                                    for (InstanceData i : gameObject.instanceData) {
+                                        Entity e = pb.create(gameObject.mass, i.translation, scale);
+                                        if (null != i.color)
+                                            ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
+                                        engine.addEntity(e);
+                                    }
+                                }
                             }
                         }
                     }
@@ -397,32 +410,10 @@ Gdx.app.log("SceneLoader", "new Entity");
         }
     }
 
-    private void buildPrimitiveObject(Engine engine, GameObject o)
-    {
-        PrimitivesBuilder pb = null;
+    private void buildGameObject(Engine engine, GameObject gameObject, Model groupModel, String nodeID) {
 
-        if (o.objectName.contains("box")) {
-// bulletshape given in file but get box builder is tied to it already
-            pb = PrimitivesBuilder.getBoxBuilder(o.objectName); // this constructor could use a size param ?
-        }
-        else if (o.objectName.contains("sphere")) {
-// bulletshape given in file but get Sphere builder is tied to it already
-            pb = PrimitivesBuilder.getSphereBuilder(o.objectName); // this constructor could use a size param ?
-        }
-        else if (o.objectName.contains("cylinder")) {
-            pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
-        }
-
-        if (null != pb) {
-            Vector3 scale = o.scale;
-            for (InstanceData i : o.instanceData) {
-                Entity e = pb.create(o.mass, i.translation, scale);
-                if (null != i.color)
-                    ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
-                engine.addEntity(e);
-            }
-        }
     }
+
     @Override
     public void dispose() {
 
