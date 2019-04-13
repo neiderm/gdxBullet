@@ -197,17 +197,12 @@ public class SceneLoader implements Disposable {
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            GameObject gameObject, InstanceData id, Model model, String nodeID) {
+            ModelInstance instance, GameObject gameObject, InstanceData id, String nodeID) {
 
         btCollisionShape shape = null;
 
-/// BaseEntityBuilder.load ??
-        ModelInstance instance = ModelInstanceEx.getModelInstance(model, nodeID);
-        if (null == instance)
-            return null;
-
         Entity e = new Entity();
-Gdx.app.log("SceneLoader", "new Entity");
+
         /*
         scale is in parent object (not instances) because object should be able to share same bullet shape!
         HOWEVER ... seeing below that bullet comp is made with mesh, we still have duplicated meshes ;... :(
@@ -370,7 +365,10 @@ instances should be same size/scale so that we can pass one collision shape to s
 */
                                         id = gameObject.instanceData.get(n++);
                                     }
-                                    e = buildObjectInstance(gameObject, id, model, node.id);
+
+                                    ModelInstance instance = ModelInstanceEx.getModelInstance(model, node.id);
+
+                                    e = buildObjectInstance(instance, gameObject, id, node.id);
 
                                     if (null != e) {
                                         engine.addEntity(e);
