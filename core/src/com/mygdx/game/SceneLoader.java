@@ -197,7 +197,7 @@ public class SceneLoader implements Disposable {
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            GameObject gameObject, InstanceData i, Model model, String nodeID) {
+            GameObject gameObject, InstanceData id, Model model, String nodeID) {
 
         btCollisionShape shape = null;
 
@@ -219,15 +219,15 @@ Gdx.app.log("SceneLoader", "new Entity");
         }
 
         // leave translation null if using translation from the model layout
-        if (null != i) {
-            if (null != i.rotation) {
+        if (null != id) {
+            if (null != id.rotation) {
                 instance.transform.idt();
-                instance.transform.rotate(i.rotation);
+                instance.transform.rotate(id.rotation);
             }
-            if (null != i.translation) {
+            if (null != id.translation) {
                 // nullify any translation from the model, apply instance translation
                 instance.transform.setTranslation(0, 0, 0);
-                instance.transform.trn(i.translation);
+                instance.transform.trn(id.translation);
             }
         }
 
@@ -235,24 +235,21 @@ Gdx.app.log("SceneLoader", "new Entity");
         mc.isShadowed = gameObject.isShadowed; // disable shadowing of skybox)
         e.add(mc);
 
-        if (null == gameObject.meshShape || gameObject.meshShape.equals("none")) {
-            // no mesh, no bullet
-        } else {
+        if (null != gameObject.meshShape ) { // no mesh, no bullet
+
             if (gameObject.meshShape.equals("convexHullShape")) {
 
                 Node node = instance.getNode(nodeID);
-
-                Gdx.app.log("SceneLoader", "createConvexHullShape( node ) node.id = " + node.id);
-
                 shape = MeshHelper.createConvexHullShape( node );
 
                 int n = ((btConvexHullShape) shape).getNumPoints(); // GN: optimizes to 8 points for platform cube
 
-                Gdx.app.log("SceneLoader", "convexHullShape  OKKKKKKKKKKKKKK");
-
             } else if (gameObject.meshShape.equals("triangleMeshShape")) {
+
                 shape = Bullet.obtainStaticNodeShape(instance.getNode(nodeID), false);
+
             } else if (gameObject.meshShape.equals("btBoxShape")) {
+
                 BoundingBox boundingBox = new BoundingBox();
                 Vector3 dimensions = new Vector3();
                 instance.calculateBoundingBox(boundingBox);
@@ -271,7 +268,6 @@ Gdx.app.log("SceneLoader", "new Entity");
                 bc.body.setActivationState(Collision.DISABLE_DEACTIVATION);
             }
         }
-        Gdx.app.log("Sceneloader", "node Name = " + nodeID);
 
         return e;
     }
@@ -299,14 +295,18 @@ Gdx.app.log("SceneLoader", "new Entity");
                 Model model = gameData.modelInfo.get(gameObject.objectName).model;
                 Entity e;
 
-                for (InstanceData i : gameObject.instanceData) {
+                for (InstanceData id : gameObject.instanceData) {
 
                     e = new Entity();
 
                     // special sauce to hand off the model node
                     ModelInstance inst = ModelInstanceEx.getModelInstance(model, model.nodes.get(0).id);
-                    inst.transform.trn(i.translation);
+                    inst.transform.trn(id.translation);
                     e.add(new ModelComponent(inst));
+
+                    boolean useBC = false;
+                    if (null != gameObject.meshShape)
+                        useBC = true;
 
                     if (useBulletComp) {
                         btCollisionShape shape = MeshHelper.createConvexHullShape(model.meshes.get(0));
@@ -325,82 +325,84 @@ Gdx.app.log("SceneLoader", "new Entity");
         }
     }
 
+
+    // tmp special sauce for selectScreen
+    private Array<Entity> charactersArray;
+
     public void buildScene(Engine engine) {
 
+        charactersArray = new Array<Entity>();
         createTestObjects(engine); // creates test objects
 
         for (String key : gameData.modelGroups.keySet()) {
 
-//            if (null != key)
-{
-                ModelGroup mg = gameData.modelGroups.get(key);
+            ModelGroup mg = gameData.modelGroups.get(key);
 
-                if (null != mg) {
+            if (null != mg) {
 
-                    ModelInfo mi = gameData.modelInfo.get(mg.modelName);
+                ModelInfo mi = gameData.modelInfo.get(mg.modelName);
 
-                    for (GameObject gameObject : mg.gameObjects) {
+                for (GameObject gameObject : mg.gameObjects) {
 
-                        if (null != mi) {
+                    buildGameObject(engine, gameObject, null, null);
 
-                            Model model = mi.model;
-                            Entity e;
+                    if (null != mi) {
 
-                            /* load all nodes from model that match /objectName.*/
-                            for (Node node : model.nodes) {
+                        Model model = mi.model;
+                        Entity e;
 
-                                String unGlobbedObjectName = gameObject.objectName.replaceAll("\\*$", "");
+                        /* load all nodes from model that match /objectName.*/
+                        for (Node node : model.nodes) {
 
-                                if (node.id.contains(unGlobbedObjectName)) {
+                            String unGlobbedObjectName = gameObject.objectName.replaceAll("\\*$", "");
 
-                                    InstanceData id;
-                                    int n = 0;
+                            if (node.id.contains(unGlobbedObjectName)) {
 
-                                    do {
-                                        id = null;
+                                InstanceData id;
+                                int n = 0;
 
-                                        if (gameObject.instanceData.size > 0) {
+                                do {
+                                    id = null;
+
+                                    if (gameObject.instanceData.size > 0) {
 /*
 instances should be same size/scale so that we can pass one collision shape to share between them
 */
-                                            id = gameObject.instanceData.get(n++);
-                                        }
-                                        e = buildObjectInstance(gameObject, id, model, node.id);
+                                        id = gameObject.instanceData.get(n++);
+                                    }
+                                    e = buildObjectInstance(gameObject, id, model, node.id);
 
-                                        if (null != e) {
-                                            engine.addEntity(e);
-                                        }
-                                    } while (null != id && n < gameObject.instanceData.size);
-                                } // else  ... bail out if matched an un-globbed name ?
-                            }
-                        } else {
-                            // look for a model file  named as the object
-                            ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
-
-                            if (null == mdlinfo) {
-
-                                PrimitivesBuilder pb = null;
-
-                                if (gameObject.objectName.contains("box")) {
-// bulletshape given in file but get box builder is tied to it already
-                                    pb = PrimitivesBuilder.getBoxBuilder(gameObject.objectName); // this constructor could use a size param ?
-                                }
-                                else if (gameObject.objectName.contains("sphere")) {
-// bulletshape given in file but get Sphere builder is tied to it already
-                                    pb = PrimitivesBuilder.getSphereBuilder(gameObject.objectName); // this constructor could use a size param ?
-                                }
-                                else if (gameObject.objectName.contains("cylinder")) {
-                                    pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
-                                }
-
-                                if (null != pb) {
-                                    Vector3 scale = gameObject.scale;
-                                    for (InstanceData i : gameObject.instanceData) {
-                                        Entity e = pb.create(gameObject.mass, i.translation, scale);
-                                        if (null != i.color)
-                                            ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
+                                    if (null != e) {
                                         engine.addEntity(e);
                                     }
+                                } while (null != id && n < gameObject.instanceData.size);
+                            } // else  ... bail out if matched an un-globbed name ?
+                        }
+                    } else {
+                        // look for a model file  named as the object
+                        ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
+
+                        if (null == mdlinfo) {
+
+                            PrimitivesBuilder pb = null;
+
+                            if (gameObject.objectName.contains("box")) {
+// bulletshape given in file but get box builder is tied to it already
+                                pb = PrimitivesBuilder.getBoxBuilder(gameObject.objectName); // this constructor could use a size param ?
+                            } else if (gameObject.objectName.contains("sphere")) {
+// bulletshape given in file but get Sphere builder is tied to it already
+                                pb = PrimitivesBuilder.getSphereBuilder(gameObject.objectName); // this constructor could use a size param ?
+                            } else if (gameObject.objectName.contains("cylinder")) {
+                                pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+                            }
+
+                            if (null != pb) {
+                                Vector3 scale = gameObject.scale;
+                                for (InstanceData i : gameObject.instanceData) {
+                                    Entity e = pb.create(gameObject.mass, i.translation, scale);
+                                    if (null != i.color)
+                                        ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
+                                    engine.addEntity(e);
                                 }
                             }
                         }
