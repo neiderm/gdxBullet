@@ -256,8 +256,7 @@
 		"modelName": "scene",
 		"gameObjects": [
 			{
-				"objectName": "SkyBox",
-				"meshShape": "none"
+				"objectName": "SkyBox"
 			},
 			{
 				"objectName": "Cube*",

@@ -14,8 +14,6 @@
 					}
 				],
 				"objectName": "offroadcar",
-				"mass": 5.1,
-				"meshShape": "convexHullShape",
 				"isShadowed": true
 			},
 			{
@@ -30,8 +28,6 @@
 					}
 				],
 				"objectName": "militaryvan",
-				"mass": 5.1,
-				"meshShape": "convexHullShape",
 				"isShadowed": true
 			},
 			{
@@ -45,8 +41,6 @@
 					}
 				],
 				"objectName": "tank",
-				"mass": 5.1,
-				"meshShape": "convexHullShape",
 				"isShadowed": true
 			}
 		]
