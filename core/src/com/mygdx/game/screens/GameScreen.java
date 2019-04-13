@@ -220,9 +220,14 @@ class GameScreen extends ScreenAvecAssets {
 
             btRigidBody chbody = e.getComponent(BulletComponent.class).body;
             TankController tc = new TankController(chbody, e.getComponent(BulletComponent.class).mass);/* should be a property of the tank? */
-            e.add(new CharacterComponent(
-                    new SteeringTankController(
-                            tc, chbody, new SteeringBulletEntity(pickedPlayer.getComponent(BulletComponent.class).body))));
+
+            CharacterComponent cc = new CharacterComponent();
+            e.add(cc);
+
+                cc.setSteerable(
+                        new SteeringTankController(
+                                tc, chbody, new SteeringBulletEntity(pickedPlayer.getComponent(BulletComponent.class).body)));
+
             engine.addEntity(e);
         }
 
@@ -545,8 +550,11 @@ So we have to pause it explicitly as it is not governed by ECS
         if (platformColor.a > 0.1f) {
             platformColor.a -= 0.005f;
             ModelInstanceEx.setColorAttribute(platformEntity.getComponent(ModelComponent.class).modelInst, platformColor);
+
         } else if (null != platformEntity) {
+
             engine.removeEntity(platformEntity);
+            platformEntity = null;
             //platformEntity.remove(BulletComponent.class); // idfk
             platformColor.a = 0;
         }
