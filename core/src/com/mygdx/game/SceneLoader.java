@@ -175,27 +175,21 @@ public class SceneLoader implements Disposable {
             Vector3 translation =
                     new Vector3(rnd.nextFloat() * 10.0f - 5f, rnd.nextFloat() + 25f, rnd.nextFloat() * 10.0f - 5f);
 
+            Entity e;
             if (i < N_BOXES) {
+//                e = load(PrimitivesBuilder.model, "boxTex", boxBuilder.getShape(size), size, size.x, translation);
+//                engine.addEntity(e);
                 engine.addEntity(boxBuilder.create(size.x, translation, size));
             } else {
+//                e = load(PrimitivesBuilder.model, "sphereTex", sphereBuilder.getShape(size), size, size.x, translation);
+//                engine.addEntity(e);
                 engine.addEntity(sphereBuilder.create(size.x, translation, new Vector3(size.x, size.x, size.x)));
             }
         }
-
-//        Vector3 t = new Vector3(-10, +15f, -15f);
-//        Vector3 s = new Vector3(2, 3, 2); // scale (w, h, d, but usually should w==d )
-//        if (useTestObjects) {
-//            // assert (s.x == s.z) ... scaling of w & d dimensions should be equal
-//            addPickObject(engine, PrimitivesBuilder.getConeBuilder("cone").create(5f, t, s));
-//            addPickObject(engine, PrimitivesBuilder.getCapsuleBuilder("capsule").create(5f, t, s));
-//            addPickObject(engine, PrimitivesBuilder.getCylinderBuilder("cylinder").create(5f, t, s));
-//            addPickObject(engine, PrimitivesBuilder.getBoxBuilder("box").create(5f, t, s));
-//            addPickObject(engine, PrimitivesBuilder.getSphereBuilder("sphere").create(5f, t, new Vector3(3, 3, 3)));
-//        }
     }
 
 
-    public void buildCharacters(Array<Entity> characters, Engine engine, String groupName, boolean useBulletComp) {
+    public void buildCharacters(Array<Entity> characters, Engine engine, String groupName) {
 
         String tmpName;
 
@@ -221,11 +215,7 @@ public class SceneLoader implements Disposable {
                     inst.transform.trn(id.translation);
                     e.add(new ModelComponent(inst));
 
-                    boolean useBC = false;
-                    if (null != gameObject.meshShape)
-                        useBC = true;
-
-                    if (useBulletComp) {
+                    if (null != gameObject.meshShape) {
                         btCollisionShape shape = MeshHelper.createConvexHullShape(model.meshes.get(0));
                         e.add(new BulletComponent(shape, inst.transform, gameObject.mass));
                     }
@@ -370,7 +360,36 @@ instances should be same size/scale so that we can pass one collision shape to s
                                 Vector3 scale = gameObject.scale;
                                 for (InstanceData i : gameObject.instanceData) {
 
-                                    e = pb.create(gameObject.mass, i.translation, scale);
+//                                    e = load(PrimitivesBuilder.model, gameObject.objectName, pb.getShape(scale), scale, gameObject.mass, i.translation);
+
+                                    // we can roll the instance scale transform into the getModelInstance ;)
+                                    ModelInstance instance = ModelInstanceEx.getModelInstance(PrimitivesBuilder.getModel(), gameObject.objectName);
+
+                                    //        if (null != size)
+// https://stackoverflow.com/questions/21827302/scaling-a-modelinstance-in-libgdx-3d-and-bullet-engine
+                                    // note : modelComponent creating bounding box
+                                    instance.nodes.get(0).scale.set(scale);
+                                    instance.calculateTransforms();
+
+                                    // leave translation null if using translation from the model layout
+                                    if (null != i.translation) {
+                                        instance.transform.trn(i.translation);
+                                    }
+
+                                    BulletComponent bc = new BulletComponent(pb.getShape(scale), instance.transform, gameObject.mass);
+
+                                    if (0 == gameObject.mass) {
+                                        // special sauce here for static entity
+// set these flags in bullet comp?
+                                        bc.body.setCollisionFlags(
+                                                bc.body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
+                                        bc.body.setActivationState(Collision.DISABLE_DEACTIVATION);
+                                    }
+
+                                    e  = new Entity();
+                                    e.add(new ModelComponent(instance));
+                                    e.add(bc);
+
 
                                     if (null != i.color)
                                         ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
