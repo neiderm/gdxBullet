@@ -5,7 +5,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": 1,
 							"y": 53,
@@ -13,7 +12,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": 2,
 							"y": 53,
@@ -21,7 +19,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": 3,
 							"y": 51,
@@ -36,13 +33,12 @@
 			}
 		]
 	},
-	"primitives": {
+	"primitiveStatics": {
 		"modelName": "primitivesModel",
 		"gameObjects": [
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": 10,
 							"y": 10,
@@ -69,7 +65,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"y": -14
 						}
@@ -88,66 +83,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
-						"translation": {
-							"y": 4,
-							"z": -15
-						}
-					},
-					{
-						"rotation": {},
-						"translation": {
-							"x": -2,
-							"y": 4,
-							"z": -15
-						}
-					},
-					{
-						"rotation": {},
-						"translation": {
-							"x": -4,
-							"y": 4,
-							"z": -15
-						}
-					},
-					{
-						"rotation": {},
-						"translation": {
-							"y": 6,
-							"z": -15
-						}
-					},
-					{
-						"rotation": {},
-						"translation": {
-							"x": -2,
-							"y": 6,
-							"z": -15
-						}
-					},
-					{
-						"rotation": {},
-						"translation": {
-							"x": -4,
-							"y": 6,
-							"z": -15
-						}
-					}
-				],
-				"objectName": "boxTex",
-				"scale": {
-					"x": 2,
-					"y": 2,
-					"z": 2
-				},
-				"mass": 0.1,
-				"meshShape": "btBoxShape",
-				"isShadowed": true
-			},
-			{
-				"instanceData": [
-					{
-						"rotation": {},
 						"translation": {
 							"x": 10,
 							"y": -5
@@ -172,14 +107,12 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"y": 4,
 							"z": -5
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -2,
 							"y": 4,
@@ -187,7 +120,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -4,
 							"y": 4,
@@ -195,14 +127,12 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"y": 6,
 							"z": -5
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -2,
 							"y": 6,
@@ -210,7 +140,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -4,
 							"y": 6,
@@ -230,7 +159,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"y": 13,
 							"z": -5
@@ -245,12 +173,12 @@
 				},
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
+				"isPickable": true,
 				"isShadowed": true
 			},
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": -1,
 							"y": 13,
@@ -266,12 +194,12 @@
 				},
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
+				"isPickable": true,
 				"isShadowed": true
 			},
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": 1,
 							"y": 11,
@@ -287,6 +215,165 @@
 				},
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
+				"isPickable": true,
+				"isShadowed": true
+			}
+		]
+	},
+	"primitiveObjects": {
+		"modelName": "primitivesModel",
+		"gameObjects": [
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": -10,
+							"y": 15,
+							"z": -15
+						}
+					}
+				],
+				"objectName": "cone",
+				"scale": {
+					"x": 2,
+					"y": 3,
+					"z": 2
+				},
+				"mass": 5,
+				"isPickable": true,
+				"isShadowed": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": -10,
+							"y": 15,
+							"z": -15
+						}
+					}
+				],
+				"objectName": "capsule",
+				"scale": {
+					"x": 2,
+					"y": 3,
+					"z": 2
+				},
+				"mass": 5,
+				"isPickable": true,
+				"isShadowed": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": -10,
+							"y": 15,
+							"z": -15
+						}
+					}
+				],
+				"objectName": "cylinder",
+				"scale": {
+					"x": 2,
+					"y": 3,
+					"z": 2
+				},
+				"mass": 5,
+				"isPickable": true,
+				"isShadowed": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": -10,
+							"y": 15,
+							"z": -15
+						}
+					}
+				],
+				"objectName": "box",
+				"scale": {
+					"x": 2,
+					"y": 3,
+					"z": 2
+				},
+				"mass": 5,
+				"isPickable": true,
+				"isShadowed": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": -10,
+							"y": 15,
+							"z": -15
+						}
+					}
+				],
+				"objectName": "sphere",
+				"scale": {
+					"x": 3,
+					"y": 3,
+					"z": 3
+				},
+				"mass": 5,
+				"isPickable": true,
+				"isShadowed": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"y": 4,
+							"z": -15
+						}
+					},
+					{
+						"translation": {
+							"x": -2,
+							"y": 4,
+							"z": -15
+						}
+					},
+					{
+						"translation": {
+							"x": -4,
+							"y": 4,
+							"z": -15
+						}
+					},
+					{
+						"translation": {
+							"y": 6,
+							"z": -15
+						}
+					},
+					{
+						"translation": {
+							"x": -2,
+							"y": 6,
+							"z": -15
+						}
+					},
+					{
+						"translation": {
+							"x": -4,
+							"y": 6,
+							"z": -15
+						}
+					}
+				],
+				"objectName": "boxTex",
+				"scale": {
+					"x": 2,
+					"y": 2,
+					"z": 2
+				},
+				"mass": 0.1,
+				"meshShape": "btBoxShape",
 				"isShadowed": true
 			}
 		]

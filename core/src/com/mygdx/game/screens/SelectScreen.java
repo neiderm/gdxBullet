@@ -124,10 +124,10 @@ class SelectScreen extends ScreenAvecAssets {
         engine.addEntity(platform);
         ModelInstanceEx.setColorAttribute(platform.getComponent(ModelComponent.class).modelInst, Color.GOLD, 0.1f);
 
-        screenData.buildCharacters(
-                characters, engine, "tanks", true, false);
+        screenData.buildCharacters(characters, engine, "tanks", false);
 
         screenData.buildScene(engine);
+//         characters = screenData.getCharactersArray();
 
         stage = new Stage();
         stage.addListener(new InputListener() {

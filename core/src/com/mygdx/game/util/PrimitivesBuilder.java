@@ -140,30 +140,30 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
 
         if (objectName.contains("box")) {
 // bulletshape given in file but get box builder is tied to it already
-            pb = PrimitivesBuilder.getBoxBuilder(); // this constructor could use a size param ?
+            pb = PrimitivesBuilder.getBoxBuilder(objectName); // this constructor could use a size param ?
         }
         else if (objectName.contains("sphere")) {
 // bulletshape given in file but get Sphere builder is tied to it already
-            pb = PrimitivesBuilder.getSphereBuilder(); // this constructor could use a size param ?
+            pb = PrimitivesBuilder.getSphereBuilder(objectName); // this constructor could use a size param ?
         }
         else if (objectName.contains("cylinder")) {
-            pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+            pb = PrimitivesBuilder.getCylinderBuilder(objectName); // currently I don't have a cylinder builder with name parameter for texturing
         }
         else if (objectName.contains("capsule")) {
-            pb = PrimitivesBuilder.getCapsuleBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+            pb = PrimitivesBuilder.getCapsuleBuilder(objectName); // currently I don't have a cylinder builder with name parameter for texturing
         }
         else if (objectName.contains("cone")) {
-            pb = PrimitivesBuilder.getConeBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
+            pb = PrimitivesBuilder.getConeBuilder(objectName); // currently I don't have a cylinder builder with name parameter for texturing
         }
 
         return pb;
     }
 
-    public static PrimitivesBuilder getSphereBuilder(final String nodeID) {
+    public static PrimitivesBuilder getSphereBuilder(final String objectName) {
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, nodeID, getShape(size), size, mass, trans);
+                return load(this.model, objectName, getShape(size), size, mass, trans);
             }
             @Override
             public btCollisionShape getShape(Vector3 size) {
@@ -172,11 +172,11 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         };
     }
 
-    public static PrimitivesBuilder getBoxBuilder(final String nodeID) {
+    public static PrimitivesBuilder getBoxBuilder(final String objectName) {
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, nodeID, getShape(size), size, mass, trans);
+                return load(this.model, objectName, getShape(size), size, mass, trans);
             }
             @Override
             public btCollisionShape getShape(Vector3 size) {
@@ -185,11 +185,15 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         };
     }
 
+/*
     public static PrimitivesBuilder getSphereBuilder() {
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, "sphere", new btSphereShape(size.x * DIM_HE), size, mass, trans);
+                return load(this.model, "sphere", getShape(size), size, mass, trans);
+            }
+            public btCollisionShape getShape(Vector3 size) {
+                return new btSphereShape(size.x * DIM_HE);
             }
         };
     }
@@ -198,24 +202,34 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, "box", new btBoxShape(size.cpy().scl(DIM_HE)), size, mass, trans);
+                return load(this.model, "box", getShape(size), size, mass, trans);
+            }
+            public btCollisionShape getShape(Vector3 size) {
+                return new btBoxShape(size.cpy().scl(DIM_HE));
+            }
+        };
+    }
+*/
+
+    public static PrimitivesBuilder getConeBuilder(final String objectName) {
+        return new PrimitivesBuilder() {
+            @Override
+            public Entity create(float mass, Vector3 trans, Vector3 size) {
+                return load(this.model, objectName, getShape(size), size, mass, trans);
+            }
+            public btCollisionShape getShape(Vector3 size) {
+                return new btConeShape(size.x * DIM_HE, size.y);
             }
         };
     }
 
-    public static PrimitivesBuilder getConeBuilder() {
+    public static PrimitivesBuilder getCapsuleBuilder(final String objectName) {
         return new PrimitivesBuilder() {
             @Override
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, "cone", new btConeShape(size.x * DIM_HE, size.y), size, mass, trans);
+                return load(this.model, objectName, getShape(size), size, mass, trans);
             }
-        };
-    }
-
-    public static PrimitivesBuilder getCapsuleBuilder() {
-        return new PrimitivesBuilder() {
-            @Override
-            public Entity create(float mass, Vector3 trans, Vector3 size) {
+            public btCollisionShape getShape(Vector3 size) {
                 // btcapsuleShape() takes actual radius parameter (unlike cone/cylinder which use width+depth)
                 //  so we apply half extent factor to our size.x here.
                 float radius = size.x * DIM_HE;
@@ -224,17 +238,22 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
                 // determine the equivalent bullet-compatible height parameter by explicitly scaling
                 // the base mesh height and then subtracting the (scaled) end radii
                 float height = DIM_CAPS_HT * size.y - size.x * DIM_HE - size.x * DIM_HE;
-                return load(this.model, "capsule", new btCapsuleShape(radius, height), size, mass, trans);
+
+                return new btCapsuleShape(radius, height);
             }
         };
     }
 
-    public static PrimitivesBuilder getCylinderBuilder() {
+    public static PrimitivesBuilder getCylinderBuilder(final String objectName) {
         return new PrimitivesBuilder() {
             @Override
             // cylinder shape apparently allow both width (x) and height (y) to be specified
             public Entity create(float mass, Vector3 trans, Vector3 size) {
-                return load(this.model, "cylinder", new btCylinderShape(size.cpy().scl(DIM_HE)), size, mass, trans);
+                return load(this.model, objectName, getShape(size), size, mass, trans);
+            }
+            public btCollisionShape getShape(Vector3 size) {
+
+                return new btCylinderShape(size.cpy().scl(DIM_HE));
             }
         };
     }
@@ -259,7 +278,7 @@ public class PrimitivesBuilder extends BaseEntityBuilder /* implements Disposabl
         }
     }
 
-    static Entity load(
+    public static Entity load(
             Model model, String nodeID, btCollisionShape shape, Vector3 size, float mass, Vector3 translation) {
 
         // we can roll the instance scale transform into the getModelInstance ;)

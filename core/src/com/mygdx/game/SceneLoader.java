@@ -182,27 +182,20 @@ public class SceneLoader implements Disposable {
             }
         }
 
-        Vector3 t = new Vector3(-10, +15f, -15f);
-        Vector3 s = new Vector3(2, 3, 2); // scale (w, h, d, but usually should w==d )
-        if (useTestObjects) {
-            // assert (s.x == s.z) ... scaling of w & d dimensions should be equal
-            addPickObject(engine, PrimitivesBuilder.getConeBuilder().create(5f, t, s));
-            addPickObject(engine, PrimitivesBuilder.getCapsuleBuilder().create(5f, t, s));
-            addPickObject(engine, PrimitivesBuilder.getCylinderBuilder().create(5f, t, s));
-            addPickObject(engine, PrimitivesBuilder.getBoxBuilder().create(5f, t, s));
-            addPickObject(engine, PrimitivesBuilder.getSphereBuilder().create(5f, t, new Vector3(3, 3, 3)));
-        }
+//        Vector3 t = new Vector3(-10, +15f, -15f);
+//        Vector3 s = new Vector3(2, 3, 2); // scale (w, h, d, but usually should w==d )
+//        if (useTestObjects) {
+//            // assert (s.x == s.z) ... scaling of w & d dimensions should be equal
+//            addPickObject(engine, PrimitivesBuilder.getConeBuilder("cone").create(5f, t, s));
+//            addPickObject(engine, PrimitivesBuilder.getCapsuleBuilder("capsule").create(5f, t, s));
+//            addPickObject(engine, PrimitivesBuilder.getCylinderBuilder("cylinder").create(5f, t, s));
+//            addPickObject(engine, PrimitivesBuilder.getBoxBuilder("box").create(5f, t, s));
+//            addPickObject(engine, PrimitivesBuilder.getSphereBuilder("sphere").create(5f, t, new Vector3(3, 3, 3)));
+//        }
     }
 
 
-
-
-    public void buildCharacters(Array<Entity> characters, Engine engine, String groupName, boolean addPickObject) {
-
-        buildCharacters(characters, engine, groupName, addPickObject, true);
-    }
-
-    public void buildCharacters(Array<Entity> characters, Engine engine, String groupName, boolean addPickObject, boolean useBulletComp) {
+    public void buildCharacters(Array<Entity> characters, Engine engine, String groupName, boolean useBulletComp) {
 
         String tmpName;
 
@@ -241,9 +234,11 @@ public class SceneLoader implements Disposable {
                         characters.add(e);
                     }
 
-                    if (addPickObject) {
-                        addPickObject(engine, e, gameObject.objectName);
+                    if (gameObject.isPickable) {
+                        addPickObject(e, gameObject.objectName);
                     }
+
+                    engine.addEntity(e);
                 }
             }
         }
@@ -369,17 +364,7 @@ instances should be same size/scale so that we can pass one collision shape to s
 
                         if (null == mdlinfo) {
 
-                            PrimitivesBuilder pb = null;
-
-                            if (gameObject.objectName.contains("box")) {
-// bulletshape given in file but get box builder is tied to it already
-                                pb = PrimitivesBuilder.getBoxBuilder(gameObject.objectName); // this constructor could use a size param ?
-                            } else if (gameObject.objectName.contains("sphere")) {
-// bulletshape given in file but get Sphere builder is tied to it already
-                                pb = PrimitivesBuilder.getSphereBuilder(gameObject.objectName); // this constructor could use a size param ?
-                            } else if (gameObject.objectName.contains("cylinder")) {
-                                pb = PrimitivesBuilder.getCylinderBuilder(); // currently I don't have a cylinder builder with name parameter for texturing
-                            }
+                            PrimitivesBuilder pb = PrimitivesBuilder.getPrimitiveBuilder(gameObject.objectName);
 
                             if (null != pb) {
                                 Vector3 scale = gameObject.scale;
@@ -391,6 +376,10 @@ instances should be same size/scale so that we can pass one collision shape to s
                                         ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, i.color, i.color.a); // kind of a hack ;)
 
                                     engine.addEntity(e);
+
+                                    if (gameObject.isPickable) {
+                                        addPickObject(e);
+                                    }
                                 }
                             }
                         }
@@ -401,7 +390,7 @@ instances should be same size/scale so that we can pass one collision shape to s
     }
 
     private void buildGameObject(Engine engine, GameObject gameObject, Model groupModel, String nodeID) {
-
+      // someday ...
     }
 
     @Override
@@ -434,13 +423,12 @@ instances should be same size/scale so that we can pass one collision shape to s
 //        saveData(cpGameData);
     }
 
-    private static void addPickObject(Engine engine, Entity e) {
-        addPickObject(engine, e, null);
+    private static void addPickObject(Entity e) {
+        addPickObject(e, null);
     }
 
-    private static void addPickObject(Engine engine, Entity e, String objectName) {
+    private static void addPickObject(Entity e, String objectName) {
 
         e.add(new PickRayComponent(objectName)); // set the object name ... yeh pretty hacky
-        engine.addEntity(e);
     }
 }

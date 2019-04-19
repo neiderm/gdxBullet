@@ -214,7 +214,7 @@ class GameScreen extends ScreenAvecAssets {
 
         characters = new Array<Entity>();
 
-        screenData.buildCharacters(characters, engine, "characters", false);
+        screenData.buildCharacters(characters, engine, "characters", true);
 
         for (Entity e : characters) {
 
@@ -227,8 +227,6 @@ class GameScreen extends ScreenAvecAssets {
                 cc.setSteerable(
                         new SteeringTankController(
                                 tc, chbody, new SteeringBulletEntity(pickedPlayer.getComponent(BulletComponent.class).body)));
-
-            engine.addEntity(e);
         }
 
         Matrix4 playerTrnsfm = pickedPlayer.getComponent(ModelComponent.class).modelInst.transform;

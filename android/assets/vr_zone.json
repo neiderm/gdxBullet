@@ -5,7 +5,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": -10,
 							"y": 23,
@@ -13,7 +12,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": 5,
 							"y": 22,
@@ -21,7 +19,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -10,
 							"y": 21,
@@ -42,7 +39,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"y": 10,
 							"z": -5
@@ -68,14 +64,12 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"y": 4,
 							"z": -15
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -2,
 							"y": 4,
@@ -83,7 +77,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -4,
 							"y": 4,
@@ -91,14 +84,12 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"y": 6,
 							"z": -15
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -2,
 							"y": 6,
@@ -106,7 +97,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -4,
 							"y": 6,
@@ -132,14 +122,12 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"y": 4,
 							"z": -5
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -2,
 							"y": 4,
@@ -147,7 +135,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -4,
 							"y": 4,
@@ -155,14 +142,12 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"y": 6,
 							"z": -5
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -2,
 							"y": 6,
@@ -170,7 +155,6 @@
 						}
 					},
 					{
-						"rotation": {},
 						"translation": {
 							"x": -4,
 							"y": 6,
@@ -190,7 +174,6 @@
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": 7,
 							"y": 6,
@@ -206,12 +189,12 @@
 				},
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
+				"isPickable": true,
 				"isShadowed": true
 			},
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": 6,
 							"y": 6,
@@ -227,12 +210,12 @@
 				},
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
+				"isPickable": true,
 				"isShadowed": true
 			},
 			{
 				"instanceData": [
 					{
-						"rotation": {},
 						"translation": {
 							"x": 7,
 							"y": 6,
@@ -248,6 +231,7 @@
 				},
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
+				"isPickable": true,
 				"isShadowed": true
 			}
 		]
