@@ -34,7 +34,6 @@
 		]
 	},
 	"primitiveStatics": {
-		"modelName": "primitivesModel",
 		"gameObjects": [
 			{
 				"instanceData": [
@@ -221,7 +220,6 @@
 		]
 	},
 	"primitiveObjects": {
-		"modelName": "primitivesModel",
 		"gameObjects": [
 			{
 				"instanceData": [

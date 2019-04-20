@@ -34,7 +34,6 @@
 		]
 	},
 	"primitives": {
-		"modelName": "primitivesModel",
 		"gameObjects": [
 			{
 				"instanceData": [
