@@ -241,26 +241,18 @@ public class SceneLoader implements Disposable {
 
                 for (InstanceData id : gameObject.instanceData) {
 
-                    e = new Entity();
-
-                    // special sauce to hand off the model node
-                    ModelInstance inst = ModelInstanceEx.getModelInstance(model, model.nodes.get(0).id);
-                    inst.transform.trn(id.translation);
-                    e.add(new ModelComponent(inst));
-
+                    btCollisionShape shape = null;
                     if (null != gameObject.meshShape) {
-                        btCollisionShape shape = MeshHelper.createConvexHullShape(model.meshes.get(0));
-                        e.add(new BulletComponent(shape, inst.transform, gameObject.mass));
+                        shape = MeshHelper.createConvexHullShape(model.meshes.get(0));
                     }
+
+                    e = buildObjectInstance(
+                            ModelInstanceEx.getModelInstance(model, model.nodes.get(0).id),
+                            gameObject, null, shape, id.translation, id.rotation, gameObject.objectName);
 
                     if (null != characters) {
                         characters.add(e);
                     }
-
-                    if (gameObject.isPickable) {
-                        addPickObject(e, gameObject.objectName);
-                    }
-
                     engine.addEntity(e);
                 }
             }
@@ -376,8 +368,10 @@ instances should be same size/scale so that we can pass one collision shape to s
                         btCollisionShape shape = PrimitivesBuilder.getShape(gameObject.objectName, scale); // note: 1 shape re-used
 
                         for (InstanceData id : gameObject.instanceData) {
-
-                            e = buildObjectInstance(PrimitivesBuilder.getModel(), gameObject, scale, shape, id.translation, id.rotation);
+                            // we can roll the instance scale transform into the getModelInstance ;)
+                            ModelInstance instance =
+                                    ModelInstanceEx.getModelInstance(PrimitivesBuilder.getModel(), gameObject.objectName);
+                            e = buildObjectInstance(instance, gameObject, scale, shape, id.translation, id.rotation, null);
 
                             if (null != id.color)
                                 ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, id.color, id.color.a); // kind of a hack ;)
@@ -392,7 +386,8 @@ instances should be same size/scale so that we can pass one collision shape to s
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            Model model, GameObject gameObject, Vector3 scale, btCollisionShape shape, Vector3 translation, Quaternion rotation) {
+            ModelInstance instance, GameObject gameObject, Vector3 scale, btCollisionShape shape, Vector3 translation, Quaternion rotation,
+            String objectName /* bah */) {
 
         Entity e = new Entity();
 
@@ -400,9 +395,6 @@ instances should be same size/scale so that we can pass one collision shape to s
         scale is in parent object (not instances) because object should be able to share same bullet shape!
         HOWEVER ... seeing below that bullet comp is made with mesh, we still have duplicated meshes ;... :(
          */
-        // we can roll the instance scale transform into the getModelInstance ;)
-        ModelInstance instance = ModelInstanceEx.getModelInstance(model, gameObject.objectName);
-
         if (null != scale) {
 // https://stackoverflow.com/questions/21827302/scaling-a-modelinstance-in-libgdx-3d-and-bullet-engine
             instance.nodes.get(0).scale.set(scale);
@@ -426,7 +418,6 @@ instances should be same size/scale so that we can pass one collision shape to s
         if (null != shape) {
 
             BulletComponent bc = new BulletComponent(shape, instance.transform, gameObject.mass);
-
             e.add(bc);
 
             // special sauce here for static entity
@@ -439,7 +430,7 @@ instances should be same size/scale so that we can pass one collision shape to s
         }
 
         if (gameObject.isPickable) {
-            addPickObject(e);
+            addPickObject(e, objectName);
         }
         return e;
     }
