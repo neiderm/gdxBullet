@@ -221,47 +221,9 @@ public class SceneLoader implements Disposable {
         return shape;
     }
 
-
-    private void buildCharacters(Engine engine) {
-
-        String groupName = "characters";
-        ModelGroup mg = gameData.modelGroups.get(groupName );
-
-        if (null != mg) {
-            for (GameObject gameObject : mg.gameObjects) {
-
-                Model model = gameData.modelInfo.get(gameObject.objectName).model;
-                Entity e;
-
-                for (InstanceData id : gameObject.instanceData) {
-
-                    btCollisionShape shape = null;
-                    if (null != gameObject.meshShape) {
-                        shape = MeshHelper.createConvexHullShape(model.meshes.get(0));
-                    }
-
-                    e = buildObjectInstance(
-                            ModelInstanceEx.getModelInstance(model, model.nodes.get(0).id),
-                            gameObject, null, shape, id.translation, id.rotation, gameObject.objectName);
-
-                    engine.addEntity(e);
-
-                    CharacterComponent cc = new CharacterComponent();
-
-                    if (gameObject.isShadowed)
-                        e.add(cc);
-                }
-            }
-        }
-    }
-
-
     public void buildScene(Engine engine) {
 
         createTestObjects(engine);
-
-        buildCharacters(engine);
-
 
         for (String key : gameData.modelGroups.keySet()) {
 
@@ -353,29 +315,50 @@ instances should be same size/scale so that we can pass one collision shape to s
                             } while (null != id && n < gameObject.instanceData.size);
                         } // else  ... bail out if matched an un-globbed name ?
                     }
-                } else {
-                    // look for a model file  named as the object
-                    ModelInfo mdlinfo = gameData.modelInfo.get(gameObject.objectName);
+                } else { //   null == mi ...
 
-                    if (null == mdlinfo) {
+                    btCollisionShape shape = null;
+                    Model model;
+                    String nodeID;
 
-                        Vector3 scale = gameObject.scale;
-                        btCollisionShape shape = PrimitivesBuilder.getShape(gameObject.objectName, scale); // note: 1 shape re-used
+                    // look for model Info name matching object name
+                    ModelInfo mdlInfo = gameData.modelInfo.get(gameObject.objectName);
 
-                        for (InstanceData id : gameObject.instanceData) {
-                            // we can roll the instance scale transform into the getModelInstance ;)
-                            ModelInstance instance =
-                                    ModelInstanceEx.getModelInstance(PrimitivesBuilder.getModel(), gameObject.objectName);
-                            e = buildObjectInstance(instance, gameObject, scale, shape, id.translation, id.rotation, null);
+                    if (null == mdlInfo) {
+                        Vector3 scale = new Vector3(1, 1, 1);
+                        if (null != gameObject.scale) {
+                            scale.set(gameObject.scale);
+                        }
 
-                            if (null != id.color)
-                                ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, id.color, id.color.a); // kind of a hack ;)
+                        shape = PrimitivesBuilder.getShape(gameObject.objectName, scale); // note: 1 shape re-used
+                        model = PrimitivesBuilder.getModel();
+                        nodeID = gameObject.objectName;
+                    } else {
+                        model = mdlInfo.model;
+                        nodeID = model.nodes.get(0).id;
 
-                            engine.addEntity(e);
+                        if (null != gameObject.meshShape) {
+                            shape = MeshHelper.createConvexHullShape(model.meshes.get(0));
                         }
                     }
-                     else
-                         Gdx.app.log("SceneLoader","has mdlinfo, unhandled : " + gameObject.objectName);
+
+                    for (InstanceData id : gameObject.instanceData) {
+
+                        // we can roll the instance scale transform into the getModelInstance ;)
+                        ModelInstance instance = ModelInstanceEx.getModelInstance(model, nodeID);
+
+                        e = buildObjectInstance(instance, gameObject, shape, id.translation, id.rotation, gameObject.objectName);
+
+                        if (gameObject.isSteerable) {
+                            e.add(new CharacterComponent());
+                        }
+
+                        if (null != id.color) {
+                            ModelInstanceEx.setColorAttribute(e.getComponent(ModelComponent.class).modelInst, id.color, id.color.a); // kind of a hack ;)
+                        }
+
+                        engine.addEntity(e);
+                    }
                 }
             }
         }
@@ -383,7 +366,7 @@ instances should be same size/scale so that we can pass one collision shape to s
 
     /* could end up "gameObject.build()" ?? */
     private Entity buildObjectInstance (
-            ModelInstance instance, GameObject gameObject, Vector3 scale, btCollisionShape shape, Vector3 translation, Quaternion rotation,
+            ModelInstance instance, GameObject gameObject, btCollisionShape shape, Vector3 translation, Quaternion rotation,
             String objectName /* bah */) {
 
         Entity e = new Entity();
@@ -392,9 +375,9 @@ instances should be same size/scale so that we can pass one collision shape to s
         scale is in parent object (not instances) because object should be able to share same bullet shape!
         HOWEVER ... seeing below that bullet comp is made with mesh, we still have duplicated meshes ;... :(
          */
-        if (null != scale) {
+        if (null != gameObject.scale) {
 // https://stackoverflow.com/questions/21827302/scaling-a-modelinstance-in-libgdx-3d-and-bullet-engine
-            instance.nodes.get(0).scale.set(scale);
+            instance.nodes.get(0).scale.set(gameObject.scale);
             instance.calculateTransforms();
         }
 
