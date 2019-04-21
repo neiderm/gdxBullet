@@ -18,6 +18,8 @@ package com.mygdx.game.screens;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -34,7 +36,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.GameWorld;
 import com.mygdx.game.SceneLoader;
 import com.mygdx.game.components.ModelComponent;
@@ -66,7 +67,7 @@ class SelectScreen extends ScreenAvecAssets {
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
     private Stage stage;
     private Entity platform;
-    private Array<Entity> characters = new Array<Entity>();
+    private ImmutableArray<Entity> characters;
     private final Vector3 originCoordinate = new Vector3(0, 0, 0);
     private int idxCurSel;
     private final float yCoordOnPlatform = 0.1f;
@@ -124,10 +125,9 @@ class SelectScreen extends ScreenAvecAssets {
         engine.addEntity(platform);
         ModelInstanceEx.setColorAttribute(platform.getComponent(ModelComponent.class).modelInst, Color.GOLD, 0.1f);
 
-        screenData.buildCharacters(characters, engine, "tanks");
-
         screenData.buildScene(engine);
-//         characters = screenData.getCharactersArray();
+
+        characters = engine.getEntitiesFor(Family.all(PickRayComponent.class).get());
 
         stage = new Stage();
         stage.addListener(new InputListener() {

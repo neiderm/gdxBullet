@@ -6,6 +6,72 @@
 				"instanceData": [
 					{
 						"translation": {
+							"x": 7,
+							"y": 6,
+							"z": -8
+						}
+					}
+				],
+				"objectName": "offroadcar",
+				"scale": {
+					"x": 1,
+					"y": 1,
+					"z": 1
+				},
+				"mass": 5.1,
+				"meshShape": "convexHullShape",
+				"isPickable": true,
+				"isShadowed": true,
+				"isSteerable": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": 6,
+							"y": 6,
+							"z": -5
+						}
+					}
+				],
+				"objectName": "militaryvan",
+				"scale": {
+					"x": 1,
+					"y": 1,
+					"z": 1
+				},
+				"mass": 5.1,
+				"meshShape": "convexHullShape",
+				"isPickable": true,
+				"isShadowed": true,
+				"isSteerable": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
+							"x": 7,
+							"y": 6,
+							"z": -5
+						}
+					}
+				],
+				"objectName": "tank",
+				"scale": {
+					"x": 1,
+					"y": 1,
+					"z": 1
+				},
+				"mass": 5.1,
+				"meshShape": "convexHullShape",
+				"isPickable": true,
+				"isShadowed": true,
+				"isSteerable": true
+			},
+			{
+				"instanceData": [
+					{
+						"translation": {
 							"x": -10,
 							"y": 23,
 							"z": -5
@@ -29,7 +95,9 @@
 				"objectName": "ship",
 				"mass": 5.1,
 				"meshShape": "convexHullShape",
-				"isShadowed": true
+				"isPickable": true,
+				"isShadowed": true,
+				"isSteerable": true
 			}
 		]
 	},
@@ -164,73 +232,6 @@
 				"objectName": "Crate.000",
 				"mass": 0.1,
 				"meshShape": "btBoxShape",
-				"isShadowed": true
-			}
-		]
-	},
-	"tanks": {
-		"gameObjects": [
-			{
-				"instanceData": [
-					{
-						"translation": {
-							"x": 7,
-							"y": 6,
-							"z": -8
-						}
-					}
-				],
-				"objectName": "offroadcar",
-				"scale": {
-					"x": 1,
-					"y": 1,
-					"z": 1
-				},
-				"mass": 5.1,
-				"meshShape": "convexHullShape",
-				"isPickable": true,
-				"isShadowed": true
-			},
-			{
-				"instanceData": [
-					{
-						"translation": {
-							"x": 6,
-							"y": 6,
-							"z": -5
-						}
-					}
-				],
-				"objectName": "militaryvan",
-				"scale": {
-					"x": 1,
-					"y": 1,
-					"z": 1
-				},
-				"mass": 5.1,
-				"meshShape": "convexHullShape",
-				"isPickable": true,
-				"isShadowed": true
-			},
-			{
-				"instanceData": [
-					{
-						"translation": {
-							"x": 7,
-							"y": 6,
-							"z": -5
-						}
-					}
-				],
-				"objectName": "tank",
-				"scale": {
-					"x": 1,
-					"y": 1,
-					"z": 1
-				},
-				"mass": 5.1,
-				"meshShape": "convexHullShape",
-				"isPickable": true,
 				"isShadowed": true
 			}
 		]

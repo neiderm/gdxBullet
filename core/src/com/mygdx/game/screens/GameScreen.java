@@ -18,7 +18,9 @@ package com.mygdx.game.screens;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.signals.Signal;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
@@ -37,7 +39,6 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.mygdx.game.BulletWorld;
 import com.mygdx.game.GameWorld;
@@ -194,39 +195,34 @@ class GameScreen extends ScreenAvecAssets {
     private void onPlayerPicked() {
 
         screenData.buildScene(engine);
+        ImmutableArray<Entity> characters = engine.getEntitiesFor(Family.all(CharacterComponent.class).get());
 
-        // load the rigs and search for matching name (name of rig as read from model is stashed in PickRayComp as a hack ;)
-
-// load the rigs and search for matching name (name of rig as read from model is stashed in PickRayComp as a hack ;)
-        Array<Entity> characters = new Array<Entity>();
-        screenData.buildCharacters(characters, engine, "tanks"); // hack object name embedded into pick component
-
+        // name of picked player rig as read from model is stashed in PickRayComp as a hack ;)
         String objectName = GameWorld.getInstance().getPlayerObjectName();
+        pickedPlayer = null; // bad w3e have to depend on this crap for now
 
         for (Entity e : characters) {
+
             if (e.getComponent(PickRayComponent.class).objectName.equals(objectName)) {
                 pickedPlayer = e;
-                pickedPlayer.remove(PickRayComponent.class); // component no longer needed, remove  it
+                pickedPlayer.remove(CharacterComponent.class); // only needed it for selecting the steerables
+                pickedPlayer.remove(PickRayComponent.class); // tmp ... stop picking yourself ...
             }
-//            else
-//                engine.removeEntity(e); // let'em become zombies ;)
         }
 
-        characters = new Array<Entity>();
-
-        screenData.buildCharacters(characters, engine, "characters");
-
         for (Entity e : characters) {
+//            if (e != pickedPlayer)  /// removed comp, so the immuatble array no longer contain picked player entity ...
+            {
+                btRigidBody chbody = e.getComponent(BulletComponent.class).body;
+                TankController tc = new TankController(chbody, e.getComponent(BulletComponent.class).mass);//* should be a property of the tank? *//*
 
-            btRigidBody chbody = e.getComponent(BulletComponent.class).body;
-            TankController tc = new TankController(chbody, e.getComponent(BulletComponent.class).mass);/* should be a property of the tank? */
-
-            CharacterComponent cc = new CharacterComponent();
-            e.add(cc);
+                CharacterComponent cc = e.getComponent(CharacterComponent.class);
 
                 cc.setSteerable(
                         new SteeringTankController(
                                 tc, chbody, new SteeringBulletEntity(pickedPlayer.getComponent(BulletComponent.class).body)));
+            }
+//            else Gdx.app.log("","");
         }
 
         Matrix4 playerTrnsfm = pickedPlayer.getComponent(ModelComponent.class).modelInst.transform;

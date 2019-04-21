@@ -18,6 +18,7 @@ package com.mygdx.game;
 
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -31,9 +32,9 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.mygdx.game.components.BulletComponent;
+import com.mygdx.game.components.CharacterComponent;
 import com.mygdx.game.components.ModelComponent;
 import com.mygdx.game.components.PickRayComponent;
 import com.mygdx.game.screens.GameObject;
@@ -175,7 +176,6 @@ public class SceneLoader implements Disposable {
             Vector3 translation =
                     new Vector3(rnd.nextFloat() * 10.0f - 5f, rnd.nextFloat() + 25f, rnd.nextFloat() * 10.0f - 5f);
 
-            Entity e;
             if (i < N_BOXES) {
 //                e = load(PrimitivesBuilder.model, "boxTex", boxBuilder.getShape(size), size, size.x, translation);
 //                engine.addEntity(e);
@@ -222,19 +222,13 @@ public class SceneLoader implements Disposable {
     }
 
 
-    public void buildCharacters(Array<Entity> characters, Engine engine, String groupName) {
+    private void buildCharacters(Engine engine) {
 
-        String tmpName;
-
-        if (null != groupName)
-            tmpName = groupName;
-        else
-            tmpName = "tanks";
-
-        ModelGroup mg = gameData.modelGroups.get(tmpName);
+        String groupName = "characters";
+        ModelGroup mg = gameData.modelGroups.get(groupName );
 
         if (null != mg) {
-            for (GameObject gameObject : gameData.modelGroups.get(tmpName).gameObjects) {
+            for (GameObject gameObject : mg.gameObjects) {
 
                 Model model = gameData.modelInfo.get(gameObject.objectName).model;
                 Entity e;
@@ -250,23 +244,24 @@ public class SceneLoader implements Disposable {
                             ModelInstanceEx.getModelInstance(model, model.nodes.get(0).id),
                             gameObject, null, shape, id.translation, id.rotation, gameObject.objectName);
 
-                    if (null != characters) {
-                        characters.add(e);
-                    }
                     engine.addEntity(e);
+
+                    CharacterComponent cc = new CharacterComponent();
+
+                    if (gameObject.isShadowed)
+                        e.add(cc);
                 }
             }
         }
     }
 
 
-    // tmp special sauce for selectScreen
-    private Array<Entity> charactersArray;
-
     public void buildScene(Engine engine) {
 
-        charactersArray = new Array<Entity>();
-        createTestObjects(engine); // creates test objects
+        createTestObjects(engine);
+
+        buildCharacters(engine);
+
 
         for (String key : gameData.modelGroups.keySet()) {
 
@@ -379,6 +374,8 @@ instances should be same size/scale so that we can pass one collision shape to s
                             engine.addEntity(e);
                         }
                     }
+                     else
+                         Gdx.app.log("SceneLoader","has mdlinfo, unhandled : " + gameObject.objectName);
                 }
             }
         }
