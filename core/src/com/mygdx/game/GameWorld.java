@@ -167,7 +167,7 @@ public final class GameWorld implements Disposable {
 
         if (null != selectedModelInfo) {
             // set the player object model info in new scene data isntance
-            sceneData.modelInfo.put(playerObjectName, new ModelInfo(selectedModelInfo.fileName));
+            sceneData.modelInfo.put(playerObjectName,         selectedModelInfo );
         }
     }
 
