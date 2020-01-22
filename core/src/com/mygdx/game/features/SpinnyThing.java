@@ -109,7 +109,9 @@ private    Quaternion turretRotation = new Quaternion();
                 }
 
                 if (null != bc && null != bc.body) {
-                    bc.body.setWorldTransform(mc.modelInst.transform);
+// Apparently this is NOT needed here (for static/kinematic bodies, YES) conflicting with BUllet
+// update of the body ... puts a significant load/slo-down of bullet update for this body!
+//                    bc.body.setWorldTransform(mc.modelInst.transform);
                 }
             }
         }
