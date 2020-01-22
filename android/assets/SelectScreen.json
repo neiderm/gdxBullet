@@ -53,7 +53,7 @@
 "modelInfo": {
 	"guntruck": {
 		"fileName": "tanks/lopolytank.g3db",
-		"animationNode": "Tank_01.003"
+		"animationNode": "Tank_01.radar"
 	},
 	"boxTex": {
 		"fileName": "data/crate.png"
