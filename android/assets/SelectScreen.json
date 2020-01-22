@@ -27,7 +27,7 @@
 	"Characters": {
 		"elements": [
 			{
-				"objectName": "truck"
+				"objectName": "Tank"
 			},
 			{
 				"objectName": "Jeep_Renegade_2016"
@@ -52,7 +52,8 @@
 },
 "modelInfo": {
 	"guntruck": {
-		"fileName": "tanks/guntruck.g3db"
+		"fileName": "tanks/lopolytank.g3db",
+		"animationNode": "Tank_01.003"
 	},
 	"boxTex": {
 		"fileName": "data/crate.png"

@@ -31,5 +31,6 @@ public class ModelInfo {
     }
 
     public String fileName;
+    public String animationNode;
     public Model model;
 }

@@ -33,6 +33,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.utils.Disposable;
 import com.mygdx.game.GameWorld;
+import com.mygdx.game.features.SpinnyThing;
 import com.mygdx.game.util.PrimitivesBuilder;
 
 import java.util.Random;
@@ -148,14 +149,13 @@ public class SceneLoader implements Disposable {
 
                 GameObject gameObject = tmg.getElement(0); // snhould be only 1!
 
-                if (null == gameObject) {   // new instance of model gruop, game object
-                    gameObject = new GameObject(localPlayerObjectname);
-                    tmg.addElement(gameObject);
-                }
-
                 gameObject.mass = 5.1f;   // should be from the model or something
                 gameObject.isPlayer = true; ////////////////// bah look at me hack
                 gameObject.objectName = localPlayerObjectname;
+
+
+                ModelInfo p0ModelInfo = sd.modelInfo.get(localPlayerObjectname);
+                gameObject.getInstanceData().get(0).adaptr = new SpinnyThing(p0ModelInfo .animationNode);
             }
         }
     }
