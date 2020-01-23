@@ -120,7 +120,7 @@ public class GameObject {
                             meshShape, boundingBox.getDimensions(dimensions), node);
                 }
 
-                buildGameObject(model, engine, mi, shape);
+                buildGameObject( engine, mi, shape);
             } // else  ... bail out if matched an un-globbed name ?
         }
     }
@@ -167,13 +167,12 @@ public class GameObject {
     /*
      * NOTE : copies the passed "instance" ... so caller should discard the reference
      */
-    void buildGameObject(
-            Model model, Engine engine, ModelInstance modelInst, btCollisionShape btcs) {
+    void buildGameObject( Engine engine, ModelInstance modelInst, btCollisionShape btcs) {
 
         if (null == modelInst) {
             System.out.println(
                     "GameObject:buildgameObject()" + "  modelInst==null, probably bad GameObject or ModelGroup definiation");
-            return;
+//            return;
         }
 
         InstanceData id = null;
@@ -206,17 +205,24 @@ public class GameObject {
                 shape = btcs;
             }
 
-            Entity e = buildObjectInstance(modelInst.copy(), shape, id);
+            Entity e;
+            if (null != modelInst) {
+                e = buildObjectInstance(modelInst.copy(), shape, id);
+            } else {
+                e = buildObjectInstance(id);
+            }
+
             engine.addEntity(e);
-//e.add(new StatusComponent(1)); // maybe
+
 
             ModelComponent mc = e.getComponent(ModelComponent.class);
+            if (null != mc) {
 
-            if (0xffff == keyIndex) {
-                //System.out.println("keyindex?");
+                if (0xffff == keyIndex) {
+                    //System.out.println("keyindex?");
+                }
+                mc.modelInfoIndx = keyIndex;    // ok maybe this is dumb why not just keep the name string
             }
-            mc.modelInfoIndx = keyIndex;    // ok maybe this is dumb why not just keep the name string
-
         } while (/*null != id && */ n < instanceData.size);
     }
 
@@ -254,7 +260,16 @@ public class GameObject {
                 Vector3 position = new Vector3();
                 position = instance.transform.getTranslation(position);
 
+
+// tmp test
+//                ModelInfo p0ModelInfo = GameWorld.getInstance().getSceneData().modelInfo.get(objectName);
+  //              if (null != p0ModelInfo){
+    //                String strAnimationNode = p0ModelInfo.animationNode;
+      //          }
+
+
                 instanceFeatureAdapter = id.adaptr.makeFeatureAdapter(position); // needs the origin location ... might as well send in the entire instance transform
+
                 e.add(new FeatureComponent(instanceFeatureAdapter));
             }
         }
@@ -315,6 +330,26 @@ public class GameObject {
                     GameWorld.getInstance().getFeature(SceneData.LOCAL_PLAYER_FNAME);
 //if (null != playerFeature)
             playerFeature.setEntity(e);                        // ok .. only 1 player entity per player Feature
+        }
+
+        return e;
+    }
+
+    /*
+     * builds object with instance data, no graphical or shape part
+     */
+    private Entity buildObjectInstance(InstanceData id) {
+
+        FeatureAdaptor instanceFeatureAdapter = null; // note ... use below for collision handling setup .. hackage
+
+        Entity e = new Entity();
+
+        if (null != id.adaptr) {
+// translation can now be passed in to feature adapter
+            Vector3 position = new Vector3(id.translation);
+
+            instanceFeatureAdapter = id.adaptr.makeFeatureAdapter(position); // needs the origin location ... might as well send in the entire instance transform
+            e.add(new FeatureComponent(instanceFeatureAdapter));
         }
 
         return e;
