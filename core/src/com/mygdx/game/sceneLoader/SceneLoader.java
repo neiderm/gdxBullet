@@ -152,10 +152,6 @@ public class SceneLoader implements Disposable {
                 gameObject.mass = 5.1f;   // should be from the model or something
                 gameObject.isPlayer = true; ////////////////// bah look at me hack
                 gameObject.objectName = localPlayerObjectname;
-
-
-                ModelInfo p0ModelInfo = sd.modelInfo.get(localPlayerObjectname);
-                gameObject.getInstanceData().get(0).adaptr = new SpinnyThing(p0ModelInfo .animationNode);
             }
         }
     }
