@@ -63,9 +63,11 @@ class InGameMenu extends Stage {
     private Array<String> buttonNames = new Array<String>();
     private ButtonGroup<TextButton> bg;
     private int count;
+
 // @dispsables
     private Texture buttonTexture;
     private Texture overlayTexture;
+
     private Image overlayImage;
 
     private  Skin uiSkin;
@@ -80,6 +82,8 @@ class InGameMenu extends Stage {
     InGameMenu(String skinName, String menuName) {
 
         super();
+
+ //setDebugAll(true);
 
         savedTextureRefs.clear();
 
@@ -112,7 +116,9 @@ class InGameMenu extends Stage {
         onscreenMenuTbl.setVisible(true);
         addActor(onscreenMenuTbl);
 
+
         setupPlayerInfo();
+
 
         // transparent overlay layer
         Pixmap.setBlending(Pixmap.Blending.None);
@@ -150,6 +156,75 @@ class InGameMenu extends Stage {
         GameWorld.getInstance().setIsPaused(true);
     }
 
+
+    /*
+     *
+     * copy code from transparent overlay
+     */
+    private final int shldSzX = 128; // //e.g. 0.125f * Gdx.graphics.getHeight()   ??
+    private final int shldSzY = 128;
+    private Image shldImage  ;
+
+private void newShieldsGraphic(){
+
+        // transparent overlay layer
+        Pixmap.setBlending(Pixmap.Blending.None);
+     Pixmap  shldPixmap =
+                new Pixmap(
+                        shldSzX,//Gdx.graphics.getWidth(),
+                        shldSzY,//Gdx.graphics.getHeight(),
+                        Pixmap.Format.RGBA8888);
+
+
+     float pcntLevel = 100 * 255 / 100f;
+     shldPixmap.setColor(0, pcntLevel, 0, 0.5f); //  test
+     shldPixmap.fillRectangle(0, 0, shldSzX, shldSzY);
+
+        Texture shldTexture = new Texture(shldPixmap);
+        savedTextureRefs.add(shldTexture);
+
+         shldImage = new Image(shldTexture );
+
+     shldPixmap.dispose();
+
+        // make it span the 3 colums and to right side of screen
+     playerInfoTbl.add(shldImage).colspan(3).right();
+    }
+
+    /*
+     could do it dynamically with a shape renderer??
+     but it doesn't have to be updated continuously or frequently
+     */
+    public  void setShieldsGraphic(int front, int right, int back, int left){
+int level = front;
+        float pcntLevel = level * 255 / 100f;
+
+//        shldPixmap.setColor(0, pcntLevel, 0, 0.5f); //  test
+//        shldPixmap.fillRectangle(0, 0, shldSzX, shldSzY);
+
+
+        // transparent overlay layer
+        Pixmap.setBlending(Pixmap.Blending.None);
+        Pixmap  shldPixmap =
+                new Pixmap(
+                        shldSzX,//Gdx.graphics.getWidth(),
+                        shldSzY,//Gdx.graphics.getHeight(),
+                        Pixmap.Format.RGBA8888);
+
+
+        shldPixmap.setColor(0, pcntLevel, 0, 0.5f); //  test
+        shldPixmap.fillRectangle(0, 0, shldSzX, shldSzY);
+
+// no good for every frame because of new instances  ... bah
+        Texture shldTexture = new Texture(shldPixmap);
+        savedTextureRefs.add(shldTexture);
+
+        shldImage.setDrawable(new TextureRegionDrawable(new TextureRegion(shldTexture)));
+
+        shldPixmap.dispose();
+    }
+
+
     void setLabelColor(Label label, Color c){
         label.setStyle(new Label.LabelStyle(font, c));
     }
@@ -173,24 +248,33 @@ class InGameMenu extends Stage {
     }
 */
     private void setupPlayerInfo(){
-
+// score
         scoreLabel = new Label("0000", new Label.LabelStyle(font, Color.WHITE));
         playerInfoTbl.add(scoreLabel);
-
+// prize count
         itemsLabel = new Label("0/3", new Label.LabelStyle(font, Color.WHITE));
         playerInfoTbl.add(itemsLabel);
-
+// screen timer
         timerLabel = new Label("0:15", new Label.LabelStyle(font, Color.WHITE));
         playerInfoTbl.add(timerLabel).padRight(1);
+
+
+//health/shields
+        playerInfoTbl.row() ;
+        // add empty widgets on leftmost two cells and shields should be in rightmost collum
+//        playerInfoTbl.add().expand().fill();
+//        playerInfoTbl.add().expand().fill();
+        newShieldsGraphic();
+
 
         playerInfoTbl.row().expand();
 
         mesgLabel = new Label("Continue? 9 ... ", new Label.LabelStyle(font, Color.WHITE));
-        playerInfoTbl.add(mesgLabel).colspan(3);
+        playerInfoTbl.add(mesgLabel).colspan(3); // whatsit?
         mesgLabel.setVisible(false); // only see this in "Continue ..." sceeen
 
         playerInfoTbl.setFillParent(true);
-//        playerInfoTbl.setDebug(true);
+ playerInfoTbl.setDebug(true);
         playerInfoTbl.setVisible(false);
         addActor(playerInfoTbl);
     }
@@ -341,7 +425,7 @@ class InGameMenu extends Stage {
     /*
      * saves the texture ref for disposal ;)
      */
-    protected ImageButton addImageButton(
+    ImageButton addImageButton(
             Texture tex, float posX, float posY, final InputMapper.InputState ips) {
 
         savedTextureRefs.add(tex);
@@ -351,13 +435,13 @@ class InGameMenu extends Stage {
         newButton.addListener(
                 new InputListener() {
 
-                    final InputMapper.InputState InputStateBinding = ips;
+                    final InputMapper.InputState inputStateBinding = ips;
 
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         // alternatively ?  e.g. toScrnCoord.x = Gdx.input.getX() etc.
-                        if (InputMapper.InputState.INP_NONE != InputStateBinding) {
-                            mapper.setInputState(InputStateBinding);
+                        if (InputMapper.InputState.INP_NONE != inputStateBinding) {
+                            mapper.setInputState(inputStateBinding);
                         }
                         else{
                             Vector2 toScrnCoord =
@@ -372,7 +456,7 @@ class InGameMenu extends Stage {
         return newButton;
     }
 
-    protected ImageButton addImageButton(Texture tex, float posX, float posY) {
+    private ImageButton addImageButton(Texture tex, float posX, float posY) {
 
         TextureRegionDrawable myTexRegionDrawable = new TextureRegionDrawable(new TextureRegion(tex));
         ImageButton newButton = new ImageButton(myTexRegionDrawable);
@@ -386,7 +470,6 @@ class InGameMenu extends Stage {
         for (Texture tex : savedTextureRefs){
             n += 1;
             tex.dispose();
-
         }
     }
 
@@ -406,5 +489,9 @@ class InGameMenu extends Stage {
 
         if (null != buttonTexture)
             buttonTexture.dispose();
+
+//        if (null != shldPixmap){
+//            shldPixmap.dispose();
+//        }
     }
 }

@@ -136,7 +136,7 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         GameFeature pf = GameWorld.getInstance().getFeature(SceneData.LOCAL_PLAYER_FNAME); // make tag a defined string
         pickedPlayer = pf.getEntity();
         pickedPlayer.remove(PickRayComponent.class); // tmp ... stop picking yourself ...
-        final int health = 30;
+        final int health = 100;
         pickedPlayer.add(new StatusComponent(health));            // max damage
 
         Matrix4 playerTrnsfm = pickedPlayer.getComponent(ModelComponent.class).modelInst.transform;
@@ -265,6 +265,7 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
                 }
             }
 
+            Color shldColor = new Color(0, 1, 0, 0.7f);
             @Override
             public void act(float delta) {
 
@@ -281,6 +282,24 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
                             lc = sc.lifeClock;
                         }
                         debugPrint("**" + lc, color, 0, 0);
+
+                        if (sc.damageF > 0 || sc.damageR > 0 || sc.damageB > 0 || sc.damageL > 0){
+
+//                            setShieldsGraphic(sc.damageF , sc.damageR , sc.damageB , sc.damageL);
+                            sc.damageL = 0; sc.damageR = 0; sc.damageF = 0; sc.damageB = 0;
+                        }
+
+                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+///*
+                        int x = Gdx.graphics.getWidth() * 7 / 8;
+                        int y = Gdx.graphics.getHeight() * 6 / 8;
+                        int w =  Gdx.graphics.getHeight()  / 8;
+                        int h =  Gdx.graphics.getHeight()  / 8;
+            shapeRenderer.setColor(shldColor);
+            shapeRenderer.rect(x, y, w, h);
+//*/
+                        shapeRenderer.end();
+
 
                         if (0 == lc) {
 
