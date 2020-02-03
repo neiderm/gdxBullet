@@ -210,49 +210,44 @@ omni radius not being used consistently (sometimes just x given, some times xyz 
                         } else {
 
                             int lc = 0;
+
+                            // use the target model instance texture etc.
+                            ModelInstance tmi = target.getComponent(ModelComponent.class).modelInst;
+
                             if (null != sc) {
 
                                 if (sc.lifeClock > 0) {
-                                    sc.lifeClock -= 10;
+//                                    sc.lifeClock -= 10;
                                 }
                                 if (KillSensor.ImpactType.FATAL == impactType) {
-                                    sc.lifeClock = 0;
+//                                    sc.lifeClock = 0;
                                 }
                                 lc = sc.lifeClock;
+////////
+                                tmi.transform.getRotation(rotation); // reuse tmp rotation variable
+                                tmpV.set(0, -1, 0); //  2.5d simplification
+                                float orientationAngle = rotation.getAngleAround(tmpV) ;
+
+                                float hitAngle = angleDetermination(
+                                        smi.transform.getTranslation(sensorPos),
+                                        tmi.transform.getTranslation(targetPos),
+                                        orientationAngle);
+
+                                int n = (int) ( Math.round( hitAngle / 90) + 0.5f ) ;
+                                if (n >= 4){
+                                    n -= 4;
+                                }
+                                sc.damage[n] += 100 / 5 ; // damage/shield levels are 0-100
+
+//                                System.out.println( "orientationAngle  = " + orientationAngle + " hitAngle= " + hitAngle );
+////////
                             }
 
                             if (lc <= 0) {
                                 impactType = KillSensor.ImpactType.FATAL;
                             }
-                            // use the target model instance texture etc.
-                            ModelInstance tmi = target.getComponent(ModelComponent.class).modelInst;
+
                             KillSensor.makeBurnOut( tmi, impactType);
-
-
-                            tmi.transform.getRotation(rotation); // reuse tmp rotation variable
-                            tmpV.set(0, -1, 0); //  2.5d simplification
-                            float orientationAngle = rotation.getAngleAround(tmpV) ;
-
-                            float hitAngleOnRig = angleDetermination(
-                                    smi.transform.getTranslation(sensorPos),
-                                    tmi.transform.getTranslation(targetPos),
-                                    orientationAngle);
-
-                            if (hitAngleOnRig > 0 && hitAngleOnRig < 45) {
-                                sc.damageF += 10;
-                            } else if (hitAngleOnRig >= 45 && hitAngleOnRig < 135) {
-                                sc.damageR += 10;
-                            } else if (hitAngleOnRig >= 135 && hitAngleOnRig < 225) {
-                                sc.damageB += 10;
-                            } else if (hitAngleOnRig >= 225 && hitAngleOnRig < 315) {
-                                sc.damageL += 10;
-                            } else if (hitAngleOnRig >= 315 && hitAngleOnRig < 360) {
-                                sc.damageF += 10;
-                            }
-
-
-
-                            System.out.println("orientationAngle  = " + orientationAngle + " hitAngle= " + hitAngleOnRig );
                         }
                     }
                 }
@@ -277,7 +272,9 @@ omni radius not being used consistently (sometimes just x given, some times xyz 
         // flips the sign to make the angle to be that of the target relative to the  projectile
         angle = (float) Math.atan( dX / dZ ) * 180f / (float)Math.PI;
         angle *= -1;
-
+/*
+as ABS(x) approaches PI, z is approaching 0 as tan(x/z) approaches the poles at -PI and +PI
+ */
         if (dZ < 0){
             angle = 180 + angle;
 //            System.out.println("< " + angle);

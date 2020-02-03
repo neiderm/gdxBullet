@@ -264,7 +264,7 @@ int level = front;
         // add empty widgets on leftmost two cells and shields should be in rightmost collum
 //        playerInfoTbl.add().expand().fill();
 //        playerInfoTbl.add().expand().fill();
-        newShieldsGraphic();
+//     newShieldsGraphic();
 
 
         playerInfoTbl.row().expand();
@@ -274,7 +274,7 @@ int level = front;
         mesgLabel.setVisible(false); // only see this in "Continue ..." sceeen
 
         playerInfoTbl.setFillParent(true);
- playerInfoTbl.setDebug(true);
+ //playerInfoTbl.setDebug(true);
         playerInfoTbl.setVisible(false);
         addActor(playerInfoTbl);
     }

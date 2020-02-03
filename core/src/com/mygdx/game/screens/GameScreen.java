@@ -265,7 +265,6 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
                 }
             }
 
-            Color shldColor = new Color(0, 1, 0, 0.7f);
             @Override
             public void act(float delta) {
 
@@ -280,40 +279,27 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
                         int lc = 0;
                         if (null != sc) {
                             lc = sc.lifeClock;
-                        }
-                        debugPrint("**" + lc, color, 0, 0);
 
-                        if (sc.damageF > 0 || sc.damageR > 0 || sc.damageB > 0 || sc.damageL > 0){
+                            // hackity crap setting flag here because lol GameUI.java has not yet got access to local player entity
+                            canExit = sc.canExit;
+                            prizeCount = sc.prizeCount;
+                            setScore(sc.bounty); // spare me your judgement ... at least do it with a setter ..
 
-//                            setShieldsGraphic(sc.damageF , sc.damageR , sc.damageB , sc.damageL);
-                            sc.damageL = 0; sc.damageR = 0; sc.damageF = 0; sc.damageB = 0;
-                        }
-
-                        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-///*
-                        int x = Gdx.graphics.getWidth() * 7 / 8;
-                        int y = Gdx.graphics.getHeight() * 6 / 8;
-                        int w =  Gdx.graphics.getHeight()  / 8;
-                        int h =  Gdx.graphics.getHeight()  / 8;
-            shapeRenderer.setColor(shldColor);
-            shapeRenderer.rect(x, y, w, h);
-//*/
-                        shapeRenderer.end();
-
+//                            debugPrint("**" + lc, color, 0, 0);
+                            boolean isDead = updateDamage(sc.damage);
+                            if (isDead) {
+                                lc = 0;
+                            }
+                            sc.lifeClock = lc;
+                          }
 
                         if (0 == lc) {
-
                             GameWorld.getInstance().setRoundActiveState(GameWorld.GAME_STATE_T.ROUND_OVER_MORTE);
                             continueScreenTimeUp = getScreenTimer() - GameUI.SCREEN_CONTINUE_TIME;
+                        } else {
+                            // do controller to model update  only if in an appropriate valid game state
+                            updateControls();
                         }
-
-                        // hackity crap setting flag here because lol GameUI.java has not yet got access to local player entity
-                        canExit = sc.canExit;
-                        prizeCount = sc.prizeCount;
-                        setScore(sc.bounty); // spare me your judgement ... at least do it with a setter ..
-
-                        // do controller to model update  only if in an appropriate valid game state
-                        updateControls();
 
                         break;
 
@@ -344,6 +330,62 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
                     gameEventSignal.dispatch(hitDetectEvent.set(EVT_HIT_DETECT, lookRay, 0)); // maybe pass transform and invoke lookRay there
                     gameEventSignal.dispatch(seeObjectEvent.set(EVT_SEE_OBJECT, lookRay, 0)); // maybe pass transform and invoke lookRay there
                 }
+            }
+
+            Color shldColorBG = new Color();
+            Color shldColorFG = new Color();
+
+            boolean updateDamage(int[] damageArray){
+
+                int x = Gdx.graphics.getWidth() * 7 / 8;
+                int y = Gdx.graphics.getHeight() * 6 / 8;
+                int w =  Gdx.graphics.getHeight()  / 8;
+                int h =  Gdx.graphics.getHeight()  / 8;
+                int cX = x + w/2;
+                int cY = y + h/2;
+                int radius = w/2;
+                boolean isdead = false;
+
+                Gdx.gl.glEnable(GL20.GL_BLEND);
+                Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+                // example of using ShapeRender to draw directly to screen
+                //        shapeRenderer.setProjectionMatrix ????
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+                for (int n = 0; n < 4; n++){
+
+                    int damage = damageArray[n]; // sc.damage[n];
+
+                    if (damage < 20){
+                        shldColorFG.set(Color.GREEN);
+                    } else  if (damage < 40){
+                        shldColorFG.set(Color.YELLOW);
+                    } else if (damage < 60){
+                        shldColorFG.set(Color.ORANGE);
+                    }else if (damage < 80){
+                        shldColorFG.set(Color.RED);
+                    }else if (damage < 100){
+                        shldColorFG.set(Color.DARK_GRAY); // shield is gone
+                    } else {
+                        isdead = true; // sc.lifeClock = 0; // shield is gone, rig destroyed
+                    }
+
+                    shldColorFG.a = 0.5f;
+                    shapeRenderer.setColor(shldColorFG);
+                    shapeRenderer.arc(cX, cY, radius, (4 - n) * 90 + 45, 90 );
+                }
+
+                shldColorBG.set(0, 0, 0, 0.5f);
+                shapeRenderer.setColor(shldColorBG);
+                shapeRenderer.circle( x + radius, y + radius, radius * 7 / 8f);
+
+                shapeRenderer.setColor(Color.BLACK);
+                shapeRenderer.line(x + radius, y, x + radius, y + radius);
+//                shapeRenderer.line(x , y + radius, x + radius, y + radius);
+
+                shapeRenderer.end();
+
+                return isdead;
             }
         };
     }
@@ -443,16 +485,14 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         BulletWorld.getInstance().update(delta, cam);
 
 
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        // example of using ShapeRender to draw directly to screen
-        //        shapeRenderer.setProjectionMatrix ????
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-/*
-            shapeRenderer.setColor(color);
-            shapeRenderer.rect(0, 0, GameWorld.VIRTUAL_WIDTH, GameWorld.VIRTUAL_HEIGHT);
-*/
-        shapeRenderer.end();
+//        Gdx.gl.glEnable(GL20.GL_BLEND);
+//        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+//        // example of using ShapeRender to draw directly to screen
+//        //        shapeRenderer.setProjectionMatrix ????
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+//        shapeRenderer.setColor(0, 1, 0, 0.5f);
+//        shapeRenderer.rect(0, 0, GameWorld.VIRTUAL_WIDTH, GameWorld.VIRTUAL_HEIGHT);
+//        shapeRenderer.end();
 
         playerUI.act(Gdx.graphics.getDeltaTime());
         playerUI.draw();
