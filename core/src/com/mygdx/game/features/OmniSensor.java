@@ -174,7 +174,7 @@ omni radius not being used consistently (sometimes just x given, some times xyz 
     }
 
 
-    private Vector3 tmpV    = new Vector3();
+    private Vector3 tmpV = new Vector3();
     private Vector3 sensorPos = new Vector3();
     private Vector3 targetPos = new Vector3();
     private int bucket;
@@ -190,64 +190,65 @@ omni radius not being used consistently (sometimes just x given, some times xyz 
 
                     if (null != impactType) {
 
+                        sensorPos.set(vT0); // fallback for sensor position if no model instance
+
+                        ModelInstance senorModelInst = null;
+
+                        ModelComponent smc = sensor.getComponent(ModelComponent.class);
+                        if (null != smc) {
+                            senorModelInst = smc.modelInst;
+                            sensorPos = smc.modelInst.transform.getTranslation(sensorPos);
+                        }
+
                         // clock target probly for player, other wise probly no status comp
-                        StatusComponent sc = target.getComponent(StatusComponent.class);
+                        StatusComponent tsc = target.getComponent(StatusComponent.class);
 
-                        ModelInstance smi = sensor.getComponent(ModelComponent.class).modelInst;
+                        if (null != tsc) {
+                            if (KillSensor.ImpactType.ACQUIRE == impactType) {
 
+                                tsc.prizeCount += 1;
 
-                        if (KillSensor.ImpactType.ACQUIRE == impactType) {
-
-                            if (null != sc) {
-                                sc.prizeCount += 1;
-                            }
-
-                            // use sensor model instance texture etc. idfk
-                            KillSensor.makeBurnOut( smi, KillSensor.ImpactType.ACQUIRE );
-
-                            sensor.add(new StatusComponent(0)); // delete me! ... 0 points bounty
-
-                        } else {
-
-                            int lc = 0;
-
-                            // use the target model instance texture etc.
-                            ModelInstance tmi = target.getComponent(ModelComponent.class).modelInst;
-
-                            if (null != sc) {
-
-                                if (sc.lifeClock > 0) {
-//                                    sc.lifeClock -= 10;
+                                // use sensor model instance texture etc. idfk
+                                if (null != senorModelInst) {
+                                    KillSensor.makeBurnOut(senorModelInst, KillSensor.ImpactType.ACQUIRE);
                                 }
-                                if (KillSensor.ImpactType.FATAL == impactType) {
-//                                    sc.lifeClock = 0;
-                                }
-                                lc = sc.lifeClock;
-////////
+
+                                sensor.add(new StatusComponent(0)); // delete me! ... 0 points bounty
+
+                            } else {
+                                // use the target model instance texture etc.
+                                ModelInstance tmi = target.getComponent(ModelComponent.class).modelInst;
+
+//                                if (tsc.lifeClock > 0) {
+////                                    sc.lifeClock -= 10;
+//                                }
+//                                if (KillSensor.ImpactType.FATAL == impactType) {
+////                                    sc.lifeClock = 0;
+//                                }
+// if (null != tmi
                                 tmi.transform.getRotation(rotation); // reuse tmp rotation variable
                                 tmpV.set(0, -1, 0); //  2.5d simplification
-                                float orientationAngle = rotation.getAngleAround(tmpV) ;
+                                float orientationAngle = rotation.getAngleAround(tmpV);
 
                                 float hitAngle = angleDetermination(
-                                        smi.transform.getTranslation(sensorPos),
-                                        tmi.transform.getTranslation(targetPos),
-                                        orientationAngle);
+                                        sensorPos, tmi.transform.getTranslation(targetPos), orientationAngle);
 
-                                int n = (int) ( Math.round( hitAngle / 90) + 0.5f ) ;
-                                if (n >= 4){
+                                int n = (int) (Math.round(hitAngle / 90) + 0.5f);
+                                if (n >= 4) {
                                     n -= 4;
                                 }
-                                sc.damage[n] += 100 / 5 ; // damage/shield levels are 0-100
+                                tsc.damage[n] += 100 / 5; // damage/shield levels are 0-100
 
 //                                System.out.println( "orientationAngle  = " + orientationAngle + " hitAngle= " + hitAngle );
-////////
-                            }
 
-                            if (lc <= 0) {
-                                impactType = KillSensor.ImpactType.FATAL;
+//if (impactType == KillSensor.ImpactType.FATAL){
+//    System.out.println();//tmp test anything use this ? no
+//}
+//                            if (lc <= 0) {
+//                                impactType = KillSensor.ImpactType.FATAL; //anything use this ? no
+//                            }
+                                KillSensor.makeBurnOut(tmi, impactType);
                             }
-
-                            KillSensor.makeBurnOut( tmi, impactType);
                         }
                     }
                 }
@@ -263,19 +264,19 @@ omni radius not being used consistently (sometimes just x given, some times xyz 
     }
 
 
-    private float angleDetermination(Vector3 sensorPos , Vector3 targetPos, float orientationAngle ){
+    private float angleDetermination(Vector3 sensorPos, Vector3 targetPos, float orientationAngle) {
 
         float dX = sensorPos.x - targetPos.x;
         float dZ = sensorPos.z - targetPos.z;
 
         float angle;
         // flips the sign to make the angle to be that of the target relative to the  projectile
-        angle = (float) Math.atan( dX / dZ ) * 180f / (float)Math.PI;
+        angle = (float) Math.atan(dX / dZ) * 180f / (float) Math.PI;
         angle *= -1;
 /*
 as ABS(x) approaches PI, z is approaching 0 as tan(x/z) approaches the poles at -PI and +PI
  */
-        if (dZ < 0){
+        if (dZ < 0) {
             angle = 180 + angle;
 //            System.out.println("< " + angle);
         }
@@ -298,11 +299,10 @@ as ABS(x) approaches PI, z is approaching 0 as tan(x/z) approaches the poles at 
         angle -= orientationAngle;
 
         // angle is now rotated to be relative to orientation of target!
-       // just need to take it in 0-359 degrees range
-        if (angle < 0){
+        // just need to take it in 0-359 degrees range
+        if (angle < 0) {
             angle += 360f;
-        } else
-        if (angle >= 360){
+        } else if (angle >= 360) {
             angle -= 360f;
         }
 
