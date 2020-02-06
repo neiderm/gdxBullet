@@ -29,6 +29,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
@@ -37,6 +38,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
+import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.BulletWorld;
 import com.mygdx.game.GameWorld;
 import com.mygdx.game.characters.CameraMan;
@@ -622,13 +624,66 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
 //        gameObject.meshShape = "convexHullShape";
 
         InstanceData id = new InstanceData(modelInst.transform.getTranslation(translation));
-        id.rotation = new Quaternion();// tmp should not need to new it here!
-        id.rotation.set(modelInst.transform.getRotation(rotation));
+        id.rotation = new Quaternion(modelInst.transform.getRotation(rotation));
+
         gameObject.getInstanceData().add(id);
+
         if (shape.className.equals("btCompoundShape")) {
-            gameObject.buildNodes2(engine, model, (btCompoundShape) shape);
+
+            buildChildNodes(engine, model, (btCompoundShape) shape, gameObject);
         } else {
             System.out.println("wtf");
+        }
+    }
+
+    private static void buildChildNodes(Engine engine, Model model, btCompoundShape compShape, GameObject go) {
+        // default to search top level of model (allows match globbing)
+        Array<Node> nodeArray = model.nodes;
+        String nodeName = go.objectName.replaceAll("\\*$", "");
+
+        // special sausce if model has all nodes as children parented under node(0) ... (cherokee and military-jeep)
+        if (model.nodes.get(0).hasChildren()) {
+            //  e.g. landscape,goonpatrol models end up here, howerver its only the exploding rig that needs
+            // special sauce:  if object name was '*' than ressuling nodename length would be 0
+            if (nodeName.length() < 1) {
+
+                nodeArray = (Array<Node>) model.nodes.get(0).getChildren();
+                nodeName = null;
+            }
+        }
+
+        int index = 0;
+
+        // have to iterate each node, can't assume that all nodes in array are valid and associated
+        // with a child-shape (careful of non-graphical nodes!)
+        for (Node node : nodeArray) {
+            ModelInstance mi = null;
+
+            if (node.parts.size > 0) {   // protect for non-graphical nodes in models (they should not be counted in index of child shapes)
+                if (null != nodeName /*&& node.id.contains(nodeName)*/) {
+                    // this is probably pointless... node is in top level of model node hierarchy, so recursive search not needed
+                    mi = new ModelInstance(model, node.id);
+
+                } else /*if (null == nodeName)*/ {
+// special sauce asssumes  loading from single parent-node, requires recursive search to find the specified _node.id_ in the model hierarchy
+                    mi = new ModelInstance(model, node.id, true, false, false);
+                }
+
+                    if (index < compShape.getNumChildShapes()) {
+
+                        btCollisionShape shape = compShape.getChildShape(index); // this might be squirrly
+                        // child shapes should have been marked w/ index of originating node!
+                        if (/*null != shape && */ index == shape.getUserIndex()) {
+                            go.buildGameObject(engine, mi, shape);
+                        } else {
+                            System.out.println("child shape index is outawack");
+                        }
+                    } else {
+                        System.out.println("index = !!!! " + index + "  compShape.getNumChildShapes() " + compShape.getNumChildShapes());
+                    }
+
+                index += 1; // only bump the index if this was a valid node (i.e. possibility of "non-graphical" nodes)
+            }
         }
     }
 
@@ -646,8 +701,8 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         gameObject.meshShape = "convexHullShape";
 
         InstanceData id = new InstanceData(modelInst.transform.getTranslation(translation));
-        id.rotation = new Quaternion();// tmp should not need to new it here!
-        id.rotation.set(modelInst.transform.getRotation(rotation));
+        id.rotation = new Quaternion(modelInst.transform.getRotation(rotation));
+
         gameObject.getInstanceData().add(id);
 
         gameObject.buildNodes(engine, model);
