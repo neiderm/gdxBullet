@@ -26,6 +26,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.utils.Array;
 import com.mygdx.game.BulletWorld;
 import com.mygdx.game.GameWorld;
@@ -120,12 +121,66 @@ public class GameObject {
                     shape = PrimitivesBuilder.getShape(
                             meshShape, boundingBox.getDimensions(dimensions), node);
                 }
+                else
+                {
+                    System.out.println();//maybe
+                }
 
                 buildGameObject( engine, mi, shape);
             } // else  ... bail out if matched an un-globbed name ?
         }
     }
 
+    public void buildNodes2(Engine engine, Model model, btCompoundShape compShape) {
+        // default to search top level of model (allows match globbing)
+        Array<Node> nodeArray = model.nodes;
+        String nodeName = objectName.replaceAll("\\*$", "");
+
+        // special sausce if model has all nodes as children parented under node(0) ... (cherokee and military-jeep)
+        if (model.nodes.get(0).hasChildren()) {
+            //  e.g. landscape,goonpatrol models end up here, howerver its only the exploding rig that needs
+            // special sauce:  if object name was '*' than ressuling nodename length would be 0
+            if (nodeName.length() < 1) {
+
+                nodeArray = (Array<Node>) model.nodes.get(0).getChildren();
+                nodeName = null;
+            }
+        }
+        int index = 0; // wuh
+        for (Node node : nodeArray) {
+            ModelInstance mi = null;
+
+            if (node.parts.size > 0) {   // protect for non-graphical nodes in models (they should not be counted in index of child shapes)
+                if (null != nodeName && node.id.contains(nodeName)) {
+                    // specified node ID means this object is loaded from mondo scene model (where everything should be either static or kinematic )
+                    mi = getModelInstance(model, node.id, scale);
+
+                } else if (null == nodeName) {
+// special sauce asssumes  loading from single parent-node, requires recursive search to find the specified _node.id_ in the model hierarchy
+                    mi = new ModelInstance(model, node.id, true, false, false);
+                }
+
+                if (null != mi) {
+
+                    if (index < compShape.getNumChildShapes()) {
+
+                    } else {
+                        System.out.println("index = !!!! " + index + "  compShape.getNumChildShapes() " + compShape.getNumChildShapes());
+                    }
+
+                    btCollisionShape shape = compShape.getChildShape(index); // this might be squirrly
+                    int idx = shape.getUserIndex();
+                    if (idx != index) {
+                        System.out.println("child shape index is outawack");
+                    }
+
+                    buildGameObject(engine, mi, shape);
+                } // else  ... bail out if matched an un-globbed name ?
+
+                index += 1; // meh
+            }
+        }
+    }
     /*
      * IN:
      *
@@ -168,7 +223,7 @@ public class GameObject {
     /*
      * NOTE : copies the passed "instance" ... so caller should discard the reference
      */
-    void buildGameObject( Engine engine, ModelInstance modelInst, btCollisionShape btcs) {
+    public void buildGameObject( Engine engine, ModelInstance modelInst, btCollisionShape btcs) {
 
         if (null == modelInst) {
             System.out.println(

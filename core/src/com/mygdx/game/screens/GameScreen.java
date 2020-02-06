@@ -35,6 +35,8 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.mygdx.game.BulletWorld;
 import com.mygdx.game.GameWorld;
 import com.mygdx.game.characters.CameraMan;
@@ -551,7 +553,13 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
                     ModelInfo mi = sd.modelInfo.get(mc.strObjectName);
 
                     if (null != mi && null != mi.model) {
-                        exploducopia(engine, mc.modelInst, mi.model);
+
+//                        exploducopia(engine, mc.modelInst, /*mi.model*/ mc.modelInst.model );
+
+                        BulletComponent bc = e.getComponent(BulletComponent.class);
+                        if (null != bc && null != bc.shape && null != mc.modelInst) {
+                            exploducopia2(engine, bc.shape, mc.modelInst, mc.modelInst.model);
+                        }
                     }
                 }
 
@@ -600,6 +608,30 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
             bc.body = null; // idfk ... is this useful?
         } // if
     }
+
+    /*
+ try to blow up a dead thing
+ */
+    private static void exploducopia2(Engine engine, btCollisionShape shape, ModelInstance modelInst, Model model) {
+
+        Vector3 translation = new Vector3();
+        Quaternion rotation = new Quaternion();
+
+        GameObject gameObject = new GameObject("*");
+        gameObject.mass = 1f;
+//        gameObject.meshShape = "convexHullShape";
+
+        InstanceData id = new InstanceData(modelInst.transform.getTranslation(translation));
+        id.rotation = new Quaternion();// tmp should not need to new it here!
+        id.rotation.set(modelInst.transform.getRotation(rotation));
+        gameObject.getInstanceData().add(id);
+        if (shape.className.equals("btCompoundShape")) {
+            gameObject.buildNodes2(engine, model, (btCompoundShape) shape);
+        } else {
+            System.out.println("wtf");
+        }
+    }
+
 
     /*
      try to blow up a dead thing
