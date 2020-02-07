@@ -547,7 +547,7 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
             StatusComponent sc = e.getComponent(StatusComponent.class);
 
             if (0 == sc.lifeClock) {
-// explode effect only available for models w/ child nodes
+// explode effect only available for models w/ child nodes .... or e.g. rig animations ???
                 ModelComponent mc = e.getComponent(ModelComponent.class);
                 if (null != mc) {
 
@@ -560,6 +560,7 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
 
                         BulletComponent bc = e.getComponent(BulletComponent.class);
                         if (null != bc && null != bc.shape && null != mc.modelInst) {
+                            // this could possibly be invoked as a rig animation "entity.modelComp.animiation.exploda()"
                             exploducopia2(engine, bc.shape, mc.modelInst, mc.modelInst.model);
                         }
                     }
@@ -623,10 +624,10 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         gameObject.mass = 1f;
 //        gameObject.meshShape = "convexHullShape";
 
-        InstanceData id = new InstanceData(modelInst.transform.getTranslation(translation));
-        id.rotation = new Quaternion(modelInst.transform.getRotation(rotation));
-
-        gameObject.getInstanceData().add(id);
+        gameObject.getInstanceData().add(
+                new InstanceData(
+                        modelInst.transform.getTranslation(translation), modelInst.transform.getRotation(rotation))
+        );
 
         if (shape.className.equals("btCompoundShape")) {
 
@@ -636,20 +637,19 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         }
     }
 
-    private static void buildChildNodes(Engine engine, Model model, btCompoundShape compShape, GameObject go) {
+    private static void buildChildNodes(Engine engine, Model model, btCompoundShape compShape, GameObject gameObject) {
         // default to search top level of model (allows match globbing)
         Array<Node> nodeArray = model.nodes;
-        String nodeName = go.objectName.replaceAll("\\*$", "");
+//        String nodeName = gameObject.objectName.replaceAll("\\*$", "");
 
         // special sausce if model has all nodes as children parented under node(0) ... (cherokee and military-jeep)
         if (model.nodes.get(0).hasChildren()) {
             //  e.g. landscape,goonpatrol models end up here, howerver its only the exploding rig that needs
             // special sauce:  if object name was '*' than ressuling nodename length would be 0
-            if (nodeName.length() < 1) {
-
+//            if (nodeName.length() < 1) {
                 nodeArray = (Array<Node>) model.nodes.get(0).getChildren();
-                nodeName = null;
-            }
+//                nodeName = null;
+//            }
         }
 
         int index = 0;
@@ -657,32 +657,59 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         // have to iterate each node, can't assume that all nodes in array are valid and associated
         // with a child-shape (careful of non-graphical nodes!)
         for (Node node : nodeArray) {
-            ModelInstance mi = null;
+
+            ModelInstance instance;
 
             if (node.parts.size > 0) {   // protect for non-graphical nodes in models (they should not be counted in index of child shapes)
-                if (null != nodeName /*&& node.id.contains(nodeName)*/) {
-                    // this is probably pointless... node is in top level of model node hierarchy, so recursive search not needed
-                    mi = new ModelInstance(model, node.id);
 
-                } else /*if (null == nodeName)*/ {
-// special sauce asssumes  loading from single parent-node, requires recursive search to find the specified _node.id_ in the model hierarchy
-                    mi = new ModelInstance(model, node.id, true, false, false);
+//                if (node.translation.x!=0 || node.translation.y!=0 || node.translation.z!=0)
+//                    System.out.println(); // tmp
+
+//                if (null != nodeName /*&& node.id.contains(nodeName)*/)
+                {
+//                    mi = GameObject.getModelInstance(model, node.id, gameObject.scale);
+//                    instance = new ModelInstance(model, node.id);
+                    instance = new ModelInstance(
+                            model, node.id, true, false, false);
+
+//        if (null != instance)
+                    {
+                        Node modelNode = instance.getNode(node.id);
+
+                        if (null != modelNode){
+                            // seems only the "panzerwagen" because it's nodes are not central to the rig model which makes it handled like scenery
+                            instance.transform.set(modelNode.globalTransform);
+                            modelNode.translation.set(0, 0, 0);
+                            modelNode.scale.set(1, 1, 1);
+                            modelNode.rotation.idt();
+//                            if (null != gameObject.scale) {
+//                                instance.nodes.get(0).scale.set(gameObject.scale);
+//                            }
+//                            instance.calculateTransforms();
+                        }
+                    }
                 }
+//                else /*if (null == nodeName)*/ {
+//// special sauce asssumes  loading from single parent-node, requires recursive search to find the specified _node.id_ in the model hierarchy
+//                    instance = new ModelInstance(model, node.id, true, false, false);
+//                }
+
+                if (null != instance) {
 
                     if (index < compShape.getNumChildShapes()) {
 
                         btCollisionShape shape = compShape.getChildShape(index); // this might be squirrly
-                        // child shapes should have been marked w/ index of originating node!
-                        if (/*null != shape && */ index == shape.getUserIndex()) {
-                            go.buildGameObject(engine, mi, shape);
-                        } else {
-                            System.out.println("child shape index is outawack");
-                        }
-                    } else {
-                        System.out.println("index = !!!! " + index + "  compShape.getNumChildShapes() " + compShape.getNumChildShapes());
-                    }
 
-                index += 1; // only bump the index if this was a valid node (i.e. possibility of "non-graphical" nodes)
+                        if (shape.getUserIndex() == index) {
+
+                            gameObject.buildGameObject(engine, instance, shape);
+                        }
+                    }
+//                    else {
+//                        System.out.println("index = !!!! " + index + "  compShape.getNumChildShapes() " + compShape.getNumChildShapes());
+//                    }
+                }
+                index += 1;
             }
         }
     }
@@ -700,8 +727,7 @@ public class GameScreen extends BaseScreenWithAssetsEngine {
         gameObject.mass = 1f;
         gameObject.meshShape = "convexHullShape";
 
-        InstanceData id = new InstanceData(modelInst.transform.getTranslation(translation));
-        id.rotation = new Quaternion(modelInst.transform.getRotation(rotation));
+        InstanceData id = new InstanceData(modelInst.transform.getTranslation(translation), modelInst.transform.getRotation(rotation));
 
         gameObject.getInstanceData().add(id);
 

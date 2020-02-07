@@ -137,20 +137,19 @@ public class GameObject {
      *    https://xoppa.github.io/blog/loading-a-scene-with-libgdx/
      *    https://stackoverflow.com/questions/21827302/scaling-a-modelinstance-in-libgdx-3d-and-bullet-engine
      */
-    private static ModelInstance getModelInstance(Model model, String strNodeName, Vector3 scale) {
+    public static ModelInstance getModelInstance(Model model, String strNodeName, Vector3 scale) {
 
         if (null == strNodeName){
             return null; // invalid node name are handled ok, but not if null, so gth out~!
         }
         ModelInstance instance = new ModelInstance(model, strNodeName);
 
-        if (null != instance)
+//        if (null != instance)
         {
             Node modelNode = instance.getNode(strNodeName);
 
-            if (null == modelNode){
-                instance = null; // evidently the Node Name is not valid!
-            } else {
+            if (null != modelNode){
+
                 instance.transform.set(modelNode.globalTransform);
                 modelNode.translation.set(0, 0, 0);
                 modelNode.scale.set(1, 1, 1);
